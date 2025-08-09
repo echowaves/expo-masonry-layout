@@ -2,6 +2,7 @@
 src/
 example/
 tsconfig.json
+metro.config.js
 
 # Development files
 .gitignore

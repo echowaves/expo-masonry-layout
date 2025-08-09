@@ -1,13 +1,17 @@
 {
   "name": "expo-masonry-layout",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "High-performance masonry layout component for React Native and Expo applications",
-  "main": "lib/index.js",
-  "module": "lib/index.js",
-  "types": "lib/index.d.ts",
+  "main": "./lib/index.js",
+  "module": "./lib/index.js",
+  "types": "./lib/index.d.ts",
+  "react-native": "./lib/index.js",
   "exports": {
     ".": {
       "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "require": "./lib/index.js",
+      "react-native": "./lib/index.js",
       "default": "./lib/index.js"
     }
   },
@@ -25,10 +29,9 @@
     "lint:fix": "eslint src --ext .ts,.tsx --fix"
   },
   "files": [
-    "lib/**/*",
+    "lib",
     "README.md",
-    "LICENSE",
-    "package.json"
+    "LICENSE"
   ],
   "keywords": [
     "react-native",
@@ -71,5 +74,9 @@
   },
   "engines": {
     "node": ">=16.0.0"
-  }
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions"
+  ]
 }

@@ -1,7 +1,8 @@
-export {
-  ExpoMasonryLayout,
-  ExpoMasonryLayout as default,
-} from './ExpoMasonryLayout';
+import { ExpoMasonryLayout } from './ExpoMasonryLayout';
+
+export { ExpoMasonryLayout };
+export default ExpoMasonryLayout;
+
 export type {
   ExpoMasonryLayoutProps,
   MasonryDimensions,
