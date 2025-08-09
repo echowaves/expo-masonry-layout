@@ -5,7 +5,7 @@ export interface MasonryItem {
   id: string;
   width?: number;
   height?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface MasonryDimensions {

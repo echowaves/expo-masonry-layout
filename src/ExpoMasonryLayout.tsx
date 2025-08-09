@@ -1,11 +1,12 @@
 import React, { useCallback, useMemo } from 'react';
 import {
+  StyleSheet,
   useWindowDimensions,
   View,
   ViewStyle,
   VirtualizedList,
 } from 'react-native';
-import { ExpoMasonryLayoutProps, MasonryRowData } from './types';
+import { ExpoMasonryLayoutProps, MasonryItem, MasonryRowData } from './types';
 import { calculateRowMasonryLayout } from './utils';
 
 /**
@@ -62,9 +63,12 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
   ]);
 
   // Default key extractor
-  const defaultKeyExtractor = useCallback((item: any, index: number) => {
-    return item.id?.toString() || index.toString();
-  }, []);
+  const defaultKeyExtractor = useCallback(
+    (item: MasonryItem, index: number) => {
+      return item.id?.toString() || index.toString();
+    },
+    []
+  );
 
   const getKeyExtractor = keyExtractor || defaultKeyExtractor;
 
@@ -77,22 +81,26 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
 
       return (
         <View
-          style={{
-            height: row.height,
-            marginBottom: spacing,
-            position: 'relative',
-          }}
+          style={[
+            styles.rowContainer,
+            {
+              height: row.height,
+              marginBottom: spacing,
+            },
+          ]}
         >
           {row.items.map(photo => (
             <View
               key={getKeyExtractor(photo, photo.masonryIndex)}
-              style={{
-                position: 'absolute',
-                top: photo.top,
-                left: photo.left,
-                width: photo.width,
-                height: photo.height,
-              }}
+              style={[
+                styles.itemContainer,
+                {
+                  top: photo.top,
+                  left: photo.left,
+                  width: photo.width,
+                  height: photo.height,
+                },
+              ]}
             >
               {renderItem({
                 item: photo,
@@ -119,8 +127,8 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
 
   // Get item layout for VirtualizedList optimization
   const getItemLayout = useCallback(
-    (data: MasonryRowData[] | null | undefined, index: number) => {
-      if (!data || !data[index]) {
+    (itemData: MasonryRowData[] | null | undefined, index: number) => {
+      if (!itemData || !itemData[index]) {
         return {
           length: baseHeight + spacing,
           offset: index * (baseHeight + spacing),
@@ -128,7 +136,7 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
         };
       }
 
-      const row = data[index];
+      const row = itemData[index];
       return {
         length: row.height + spacing,
         offset: row.top || 0,
@@ -156,8 +164,8 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
       initialNumToRender={initialNumToRender}
       renderItem={renderRow}
       keyExtractor={rowKeyExtractor}
-      getItemCount={data => data?.length || 0}
-      getItem={(data, index) => data?.[index]}
+      getItemCount={listData => listData?.length || 0}
+      getItem={(listData, index) => listData?.[index]}
       getItemLayout={getItemLayout}
       onEndReached={onEndReached}
       onEndReachedThreshold={onEndReachedThreshold}
@@ -180,3 +188,12 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
 };
 
 export default ExpoMasonryLayout;
+
+const styles = StyleSheet.create({
+  rowContainer: {
+    position: 'relative',
+  },
+  itemContainer: {
+    position: 'absolute',
+  },
+});
