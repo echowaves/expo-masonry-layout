@@ -1,7 +1,9 @@
 # expo-masonry-layout
 
 <p align="center">
-  <img src="./assets/simulator_screenshot_B5DA2B98-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
+  <img src="./assets/simulator_screenshot_B5DA## 🖼️ Using with Expo Cached Image
+
+For better performance with remote images, we recomm## 🔧 Advanced Usagend using [`expo-cached-image`](https://github.com/kanzitelli/expo-cached-image) alongside the masonry layout:8-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
 </p>
 
 <p align="center">
@@ -38,7 +40,7 @@
 
 This component is actively used in production by:
 
-- **[WiSaw](https://github.com/echowaves/WiSaw)** - A location-based photo sharing mobile app that displays thousands of user-generated photos in a beautiful masonry layout. WiSaw demonstrates the component's ability to handle large datasets with smooth scrolling and optimal performance.
+- **[WiSaw](https://github.com/echowaves/WiSaw)** - A location-based photo sharing mobile app that displays thousands of user-generated photos in a beautiful masonry layout. WiSaw demonstrates the component's ability to handle large datasets with smooth scrolling and optimal performance. demonstrates the component's ability to handle large datasets with smooth scrolling and optimal performance.
 
 The screenshot above is taken directly from the WiSaw app, showcasing real-world usage with actual user photos.
 
