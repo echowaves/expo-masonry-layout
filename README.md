@@ -1,10 +1,7 @@
 # expo-masonry-layout
 
 <p align="center">
-  <img src="./assets/simulator_screenshot_B5DA## 🖼️ Using with Expo Cached Image
-
-For better performance with remote images, we recommend using [`expo-cached-image`](https://github.com/kanzitelli/expo-cached-image) alongside the masonry layout:8-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
-
+  <img src="./assets/simulator_screenshot_B5DA2B98-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
 </p>
 
 <p align="center">
