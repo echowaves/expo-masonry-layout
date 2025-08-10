@@ -52,7 +52,7 @@ yarn add expo-masonry-layout
 
 ## 📖 Quick Start
 
-```tsx
+````tsx
 import React from 'react';
 import { View, Image, Text } from 'react-native';
 import ExpoMasonryLayout from 'expo-masonry-layout';
@@ -218,7 +218,7 @@ const PhotoMasonryGrid = () => {
     />
   );
 };
-```
+````
 
 ## 📋 API Reference
 
