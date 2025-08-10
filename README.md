@@ -1,7 +1,10 @@
 # expo-masonry-layout
 
 <p align="center">
-  <img src="./assets/simulator_screenshot_B5DA2B98-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
+  <img src="./assets/simulator_screenshot_B5DA## 🖼️ Using with Expo Cached Image
+
+For better performance with remote images, we recommend using [`expo-cached-image`](https://github.com/kanzitelli/expo-cached-image) alongside the masonry layout:8-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
+
 </p>
 
 <p align="center">
@@ -86,7 +89,94 @@ const MyMasonryGrid = () => {
 };
 ```
 
-## 🔧 Advanced Usage
+## �️ Using with Expo Cached Image
+
+For better performance with remote images, we recommend using `expo-cached-image` alongside the masonry layout:
+
+```bash
+npm install expo-cached-image
+# or
+yarn add expo-cached-image
+```
+
+Here's how to integrate it:
+
+```tsx
+import React from 'react';
+import { View, Dimensions } from 'react-native';
+import ExpoMasonryLayout from 'expo-masonry-layout';
+import { CachedImage } from 'expo-cached-image';
+
+const CachedMasonryGrid = () => {
+  const data = [
+    { id: '1', uri: 'https://example.com/image1.jpg', width: 300, height: 400 },
+    { id: '2', uri: 'https://example.com/image2.jpg', width: 400, height: 300 },
+    { id: '3', uri: 'https://example.com/image3.jpg', width: 300, height: 300 },
+    // ... more items
+  ];
+
+  const renderItem = ({ item, dimensions }) => (
+    <View style={{ width: dimensions.width, height: dimensions.height }}>
+      <CachedImage
+        source={{ uri: item.uri }}
+        style={{ width: '100%', height: '100%' }}
+        resizeMode="cover"
+        cacheKey={`masonry-${item.id}`} // Unique cache key
+        placeholderContent={
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: '#f0f0f0',
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}
+          />
+        }
+      />
+    </View>
+  );
+
+  return (
+    <ExpoMasonryLayout
+      data={data}
+      renderItem={renderItem}
+      spacing={6}
+      keyExtractor={item => item.id}
+    />
+  );
+};
+```
+
+### Benefits of Using Expo Cached Image:
+
+- **Automatic Caching**: Images are cached locally after first load
+- **Placeholder Support**: Shows placeholder while loading
+- **Better Performance**: Reduces network requests for repeated views
+- **Memory Management**: Efficient image memory handling
+- **Progressive Loading**: Smooth loading experience
+
+### Performance Tips with Cached Images:
+
+1. **Use Unique Cache Keys**: Ensure each image has a unique `cacheKey` prop
+2. **Optimize Image Sizes**: Use appropriately sized images for your layout
+3. **Implement Placeholders**: Provide placeholder content for better UX
+4. **Clear Cache When Needed**: Implement cache clearing for updated content
+
+```tsx
+// Example with cache management
+import { CachedImage } from 'expo-cached-image';
+
+const clearImageCache = async () => {
+  await CachedImage.clearCache();
+};
+
+// Clear cache for specific images
+const clearSpecificCache = async (imageId) => {
+  await CachedImage.clearCache(`masonry-${imageId}`);
+};
+```
+
+## �🔧 Advanced Usage
 
 Here's a comprehensive example inspired by the WiSaw app implementation:
 
