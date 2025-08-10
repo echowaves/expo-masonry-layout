@@ -52,7 +52,7 @@ yarn add expo-masonry-layout
 
 ## 📖 Quick Start
 
-````tsx
+```tsx
 import React from 'react';
 import { View, Image, Text } from 'react-native';
 import ExpoMasonryLayout from 'expo-masonry-layout';
@@ -86,7 +86,7 @@ const MyMasonryGrid = () => {
 };
 ```
 
-## Using with Expo Cached Image
+## 🖼️ Using with Expo Cached Image
 
 For better performance with remote images, we recommend using [`expo-cached-image`](https://github.com/kanzitelli/expo-cached-image) alongside the masonry layout:
 
@@ -125,7 +125,7 @@ const CachedMasonryGrid = () => {
               flex: 1,
               backgroundColor: '#f0f0f0',
               justifyContent: 'center',
-              alignItems: 'center'
+              alignItems: 'center',
             }}
           />
         }
@@ -168,7 +168,7 @@ const clearImageCache = async () => {
 };
 
 // Clear cache for specific images
-const clearSpecificCache = async (imageId) => {
+const clearSpecificCache = async imageId => {
   await CachedImage.clearCache(`masonry-${imageId}`);
 };
 ```
@@ -306,7 +306,7 @@ const PhotoMasonryGrid = () => {
     />
   );
 };
-````
+```
 
 ## 📋 API Reference
 
