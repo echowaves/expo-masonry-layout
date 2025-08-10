@@ -86,7 +86,7 @@ const MyMasonryGrid = () => {
 };
 ```
 
-## 🖼️ Using with Expo Cached Image
+## Using with Expo Cached Image
 
 For better performance with remote images, we recommend using [`expo-cached-image`](https://github.com/kanzitelli/expo-cached-image) alongside the masonry layout:
 
