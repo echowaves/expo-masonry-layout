@@ -1,7 +1,7 @@
 # expo-masonry-layout
 
 <p align="center">
-  <img src="./assets/simulator_screenshot_B5DA8-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
+  <img src="./assets/simulator_screenshot_B5DA2B98-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
 </p>
 
 <p align="center">
@@ -402,9 +402,6 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
 ---
 
 <p align="center">
-  Made with ❤️ by <a href="https://github.com/echowaves">Echowaves Corp.</a><br/>
-  <em>Powering beautiful photo experiences in <a href="https://github.com/echowaves/WiSaw">WiSaw</a> and beyond</em>
-</p>
   Made with ❤️ by <a href="https://github.com/echowaves">Echowaves Corp.</a><br/>
   <em>Powering beautiful photo experiences in <a href="https://github.com/echowaves/WiSaw">WiSaw</a> and beyond</em>
 </p>
