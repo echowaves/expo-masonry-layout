@@ -84,9 +84,6 @@ const MyMasonryGrid = () => {
     />
   );
 };
-```
-
-};
 
 ## 🔧 Advanced Usage
 
