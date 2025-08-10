@@ -1,8 +1,30 @@
 # expo-masonry-layout
 
-A high-performance masonry layout component for React Native and Expo applications.
+<p align="center">
+  <img src="./assets/simulator_screenshot_B5DA2B98-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
+</p>
 
-## Features
+<p align="center">
+  <strong>A high-performance masonry layout component for React Native and Expo applications</strong>
+</p>
+
+<p align="center">
+  <em>✨ Used in production by <a href="https://github.com/echowaves/WiSaw">WiSaw</a> - a location-based photo sharing app</em>
+</p>
+
+<p align="center">
+  <a href="https://www.npmjs.com/package/expo-masonry-layout">
+    <img src="https://img.shields.io/npm/v/expo-masonry-layout.svg" alt="npm version" />
+  </a>
+  <a href="https://www.npmjs.com/package/expo-masonry-layout">
+    <img src="https://img.shields.io/npm/dm/expo-masonry-layout.svg" alt="npm downloads" />
+  </a>
+  <a href="https://github.com/echowaves/expo-masonry-layout/blob/main/LICENSE">
+    <img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="license" />
+  </a>
+</p>
+
+## ✨ Features
 
 - 🚀 **High Performance**: Uses VirtualizedList for optimal performance with large datasets
 - 📱 **Responsive**: Automatically adapts to screen size and orientation changes
@@ -12,7 +34,15 @@ A high-performance masonry layout component for React Native and Expo applicatio
 - 🎯 **TypeScript**: Full TypeScript support with comprehensive types
 - ⚡ **Optimized**: Minimal re-renders with memoized calculations
 
-## Installation
+## 🌟 Real-world Usage
+
+This component is actively used in production by:
+
+- **[WiSaw](https://github.com/echowaves/WiSaw)** - A location-based photo sharing mobile app that displays thousands of user-generated photos in a beautiful masonry layout. WiSaw demonstrates the component's ability to handle large datasets with smooth scrolling and optimal performance.
+
+The screenshot above is taken directly from the WiSaw app, showcasing real-world usage with actual user photos.
+
+## 🚀 Installation
 
 ```bash
 npm install expo-masonry-layout
@@ -20,7 +50,7 @@ npm install expo-masonry-layout
 yarn add expo-masonry-layout
 ```
 
-## Basic Usage
+## 📖 Quick Start
 
 ```tsx
 import React from 'react';
@@ -56,31 +86,50 @@ const MyMasonryGrid = () => {
 };
 ```
 
-## Advanced Usage
+};
+
+## 🔧 Advanced Usage
+
+Here's a comprehensive example inspired by the WiSaw app implementation:
 
 ```tsx
 import React, { useState, useCallback } from 'react';
+import { TouchableOpacity, Image, Text, View } from 'react-native';
 import ExpoMasonryLayout, { MasonryRenderItemInfo } from 'expo-masonry-layout';
 
-const AdvancedMasonryGrid = () => {
-  const [data, setData] = useState(initialData);
+// Example data structure similar to WiSaw's photo feed
+const PhotoMasonryGrid = () => {
+  const [photos, setPhotos] = useState(initialPhotos);
   const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  const renderItem = useCallback(
+  // Photo item renderer similar to WiSaw's implementation
+  const renderPhotoItem = useCallback(
     ({ item, dimensions }: MasonryRenderItemInfo) => (
       <TouchableOpacity
         style={{
           width: dimensions.width,
           height: dimensions.height,
-          borderRadius: 8,
+          borderRadius: 12,
           overflow: 'hidden',
+          backgroundColor: '#f0f0f0',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+          elevation: 3,
         }}
-        onPress={() => handleItemPress(item)}
+        onPress={() => handlePhotoPress(item)}
+        activeOpacity={0.9}
       >
         <Image
           source={{ uri: item.imageUrl }}
-          style={{ width: '100%', height: '100%' }}
+          style={{
+            width: '100%',
+            height: '85%',
+          }}
           resizeMode="cover"
+          loadingIndicatorSource={require('./placeholder.png')}
         />
         <View
           style={{
@@ -88,11 +137,28 @@ const AdvancedMasonryGrid = () => {
             bottom: 0,
             left: 0,
             right: 0,
+            backgroundColor: 'rgba(0,0,0,0.7)',
             padding: 8,
           }}
         >
-          <Text style={{ color: 'white', fontWeight: 'bold' }}>
-            {item.title}
+          <Text
+            style={{
+              color: 'white',
+              fontSize: 12,
+              fontWeight: '600',
+            }}
+            numberOfLines={1}
+          >
+            📍 {item.location}
+          </Text>
+          <Text
+            style={{
+              color: 'rgba(255,255,255,0.8)',
+              fontSize: 10,
+              marginTop: 2,
+            }}
+          >
+            ❤️ {item.likes} • 👤 {item.username}
           </Text>
         </View>
       </TouchableOpacity>
@@ -100,42 +166,64 @@ const AdvancedMasonryGrid = () => {
     []
   );
 
+  const handlePhotoPress = useCallback(photo => {
+    // Navigate to photo detail view (like in WiSaw)
+    console.log('Photo pressed:', photo.id);
+  }, []);
+
   const handleRefresh = useCallback(async () => {
     setRefreshing(true);
-    // Fetch new data
-    const newData = await fetchData();
-    setData(newData);
-    setRefreshing(false);
+    try {
+      // Fetch fresh photos from your API
+      const freshPhotos = await fetchLatestPhotos();
+      setPhotos(freshPhotos);
+    } catch (error) {
+      console.error('Error refreshing photos:', error);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   const handleLoadMore = useCallback(async () => {
-    // Load more data
-    const moreData = await fetchMoreData();
-    setData(prevData => [...prevData, ...moreData]);
-  }, []);
+    if (loading) return;
+
+    setLoading(true);
+    try {
+      // Load more photos for infinite scroll
+      const morePhotos = await fetchMorePhotos(photos.length);
+      setPhotos(prevPhotos => [...prevPhotos, ...morePhotos]);
+    } catch (error) {
+      console.error('Error loading more photos:', error);
+    } finally {
+      setLoading(false);
+    }
+  }, [photos.length, loading]);
 
   return (
     <ExpoMasonryLayout
-      data={data}
-      renderItem={renderItem}
+      data={photos}
+      renderItem={renderPhotoItem}
       spacing={8}
-      maxItemsPerRow={4}
-      baseHeight={120}
+      maxItemsPerRow={2} // WiSaw uses 2 columns for optimal photo viewing
+      baseHeight={200}
       keyExtractor={item => item.id}
       refreshing={refreshing}
       onRefresh={handleRefresh}
       onEndReached={handleLoadMore}
       onEndReachedThreshold={0.2}
-      aspectRatioFallbacks={[0.8, 1.0, 1.2, 1.5]}
-      style={{ backgroundColor: '#f5f5f5' }}
-      contentContainerStyle={{ padding: 16 }}
+      aspectRatioFallbacks={[0.7, 1.0, 1.3, 1.6]} // Common photo ratios
+      style={{ backgroundColor: '#f8f9fa' }}
+      contentContainerStyle={{ padding: 8 }}
       showsVerticalScrollIndicator={false}
+      initialNumToRender={8}
+      maxToRenderPerBatch={10}
+      windowSize={15}
     />
   );
 };
 ```
 
-## API Reference
+## 📋 API Reference
 
 ### Props
 
@@ -159,7 +247,7 @@ const AdvancedMasonryGrid = () => {
 | `contentContainerStyle`        | `ViewStyle`                                     | `undefined`                                | Style for scroll content            |
 | `showsVerticalScrollIndicator` | `boolean`                                       | `false`                                    | Show scroll indicator               |
 
-### Types
+### 🔷 Types
 
 #### MasonryItem
 
@@ -187,7 +275,7 @@ interface MasonryRenderItemInfo {
 }
 ```
 
-## Performance Tips
+## 🎯 Performance Tips
 
 1. **Provide Image Dimensions**: Include `width` and `height` in your data items for optimal layout calculation
 2. **Memoize Render Function**: Use `useCallback` for your `renderItem` function
@@ -195,7 +283,7 @@ interface MasonryRenderItemInfo {
 4. **Key Extractor**: Provide a stable `keyExtractor` function
 5. **Batch Size**: Adjust `maxToRenderPerBatch` based on your item complexity
 
-## Layout Algorithm
+## 🧮 Layout Algorithm
 
 The component uses a sophisticated row-based masonry algorithm:
 
@@ -211,14 +299,24 @@ This approach ensures:
 - Predictable layout behavior
 - Excellent performance with virtualization
 
-## License
+## 📄 License
 
 MIT
 
-## Contributing
+## 🤝 Contributing
 
 Contributions are welcome! Please read our contributing guidelines and submit pull requests to our repository.
 
-## Support
+## 📞 Support
 
-If you encounter any issues or have questions, please file an issue on our GitHub repository.
+- 🐛 **Issues**: [GitHub Issues](https://github.com/echowaves/expo-masonry-layout/issues)
+- 💬 **Discussions**: [GitHub Discussions](https://github.com/echowaves/expo-masonry-layout/discussions)
+- 📱 **See it in action**: Check out [WiSaw](https://github.com/echowaves/WiSaw) for a real-world implementation
+- 📧 **Email**: [Contact Echowaves](mailto:support@echowaves.com)
+
+---
+
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/echowaves">Echowaves Corp.</a><br/>
+  <em>Powering beautiful photo experiences in <a href="https://github.com/echowaves/WiSaw">WiSaw</a> and beyond</em>
+</p>
