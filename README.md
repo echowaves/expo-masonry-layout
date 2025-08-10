@@ -228,14 +228,14 @@ const PhotoMasonryGrid = () => {
 ### Props
 
 | Prop                           | Type                                            | Default                                    | Description                         |
-| ------------------------------ | ----------------------------------------------- | ------------------------------------------ | ----------------------------------- | ------ | -------------------------------- |
+| ------------------------------ | ----------------------------------------------- | ------------------------------------------ | ----------------------------------- |
 | `data`                         | `MasonryItem[]`                                 | **required**                               | Array of items to display           |
 | `renderItem`                   | `(info: MasonryRenderItemInfo) => ReactElement` | **required**                               | Function to render each item        |
 | `spacing`                      | `number`                                        | `6`                                        | Space between items in pixels       |
 | `maxItemsPerRow`               | `number`                                        | `6`                                        | Maximum number of items per row     |
 | `baseHeight`                   | `number`                                        | `100`                                      | Base height for layout calculations |
 | `aspectRatioFallbacks`         | `number[]`                                      | `[0.56, 0.67, 0.75, 1.0, 1.33, 1.5, 1.78]` | Fallback aspect ratios              |
-| `keyExtractor`                 | `(item: MasonryItem, index: number) => string`  | `(item, index) => item.id \\               | \\                                  | index` | Extract unique key for each item |
+| `keyExtractor`                 | `(item: MasonryItem, index: number) => string`  | `(item, index) => item.id \|\| index`      | Extract unique key for each item    |
 | `onEndReached`                 | `() => void`                                    | `undefined`                                | Called when scrolling near end      |
 | `onEndReachedThreshold`        | `number`                                        | `0.1`                                      | Threshold for `onEndReached`        |
 | `refreshing`                   | `boolean`                                       | `false`                                    | Whether list is refreshing          |
