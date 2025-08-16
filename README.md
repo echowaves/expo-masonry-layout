@@ -44,11 +44,11 @@ The screenshot above is taken directly from the WiSaw app, showcasing real-world
 
 ## 🚀 Installation
 
-```bash
+````bash
 npm install expo-masonry-layout
 # or
 yarn add expo-masonry-layout
-```
+
 
 ## 📖 Quick Start
 
@@ -84,7 +84,7 @@ const MyMasonryGrid = () => {
     />
   );
 };
-```
+````
 
 ## 🖼️ Using with Expo Cached Image
 
@@ -308,8 +308,6 @@ const PhotoMasonryGrid = () => {
 };
 ```
 
-````
-
 ## 🔧 VirtualizedList Pass-Through
 
 The component now supports passing any VirtualizedList prop directly to the underlying implementation. This gives you full control over scrolling behavior, performance tuning, and platform-specific features:
@@ -374,15 +372,15 @@ The component extends React Native's `VirtualizedListProps` and accepts all Virt
 
 #### Masonry-Specific Props
 
-| Prop                           | Type                                            | Default                                    | Description                         |
-| ------------------------------ | ----------------------------------------------- | ------------------------------------------ | ----------------------------------- |
-| `data`                         | `MasonryItem[]`                                 | **required**                               | Array of items to display           |
-| `renderItem`                   | `(info: MasonryRenderItemInfo) => ReactElement` | **required**                               | Function to render each item        |
-| `spacing`                      | `number`                                        | `6`                                        | Space between items in pixels       |
-| `maxItemsPerRow`               | `number`                                        | `6`                                        | Maximum number of items per row     |
-| `baseHeight`                   | `number`                                        | `100`                                      | Base height for layout calculations |
-| `aspectRatioFallbacks`         | `number[]`                                      | `[0.56, 0.67, 0.75, 1.0, 1.33, 1.5, 1.78]` | Fallback aspect ratios              |
-| `keyExtractor`                 | `(item: MasonryItem, index: number) => string`  | `(item, index) => item.id \|\| index`      | Extract unique key for each item    |
+| Prop                   | Type                                            | Default                                    | Description                         |
+| ---------------------- | ----------------------------------------------- | ------------------------------------------ | ----------------------------------- |
+| `data`                 | `MasonryItem[]`                                 | **required**                               | Array of items to display           |
+| `renderItem`           | `(info: MasonryRenderItemInfo) => ReactElement` | **required**                               | Function to render each item        |
+| `spacing`              | `number`                                        | `6`                                        | Space between items in pixels       |
+| `maxItemsPerRow`       | `number`                                        | `6`                                        | Maximum number of items per row     |
+| `baseHeight`           | `number`                                        | `100`                                      | Base height for layout calculations |
+| `aspectRatioFallbacks` | `number[]`                                      | `[0.56, 0.67, 0.75, 1.0, 1.33, 1.5, 1.78]` | Fallback aspect ratios              |
+| `keyExtractor`         | `(item: MasonryItem, index: number) => string`  | `(item, index) => item.id \|\| index`      | Extract unique key for each item    |
 
 #### VirtualizedList Props
 
@@ -467,4 +465,3 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
   Made with ❤️ by <a href="https://github.com/echowaves">Echowaves Corp.</a><br/>
   <em>Powering beautiful photo experiences in <a href="https://github.com/echowaves/WiSaw">WiSaw</a> and beyond</em>
 </p>
-````
