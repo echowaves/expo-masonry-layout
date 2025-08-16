@@ -308,9 +308,71 @@ const PhotoMasonryGrid = () => {
 };
 ```
 
+````
+
+## 🔧 VirtualizedList Pass-Through
+
+The component now supports passing any VirtualizedList prop directly to the underlying implementation. This gives you full control over scrolling behavior, performance tuning, and platform-specific features:
+
+```tsx
+import React, { useCallback } from 'react';
+import ExpoMasonryLayout from 'expo-masonry-layout';
+
+const AdvancedMasonryGrid = () => {
+  const handleScroll = useCallback((event) => {
+    console.log('Scroll position:', event.nativeEvent.contentOffset.y);
+  }, []);
+
+  const handleScrollBeginDrag = useCallback(() => {
+    console.log('User started scrolling');
+  }, []);
+
+  return (
+    <ExpoMasonryLayout
+      data={photos}
+      renderItem={renderPhotoItem}
+      spacing={8}
+      maxItemsPerRow={2}
+
+      {/* VirtualizedList props passed through */}
+      onScroll={handleScroll}
+      onScrollBeginDrag={handleScrollBeginDrag}
+      scrollEventThrottle={16}
+      showsVerticalScrollIndicator={true}
+      bounces={true}
+      scrollEnabled={true}
+      nestedScrollEnabled={true} // Android
+      maintainVisibleContentPosition={{
+        minIndexForVisible: 0,
+        autoscrollToTopThreshold: 100,
+      }}
+
+      {/* Performance tuning */}
+      initialNumToRender={10}
+      maxToRenderPerBatch={5}
+      windowSize={10}
+      removeClippedSubviews={true}
+      updateCellsBatchingPeriod={50}
+
+      {/* Infinite scroll */}
+      onEndReached={loadMoreData}
+      onEndReachedThreshold={0.2}
+
+      {/* Pull to refresh */}
+      refreshing={isRefreshing}
+      onRefresh={handleRefresh}
+    />
+  );
+};
+```
+
 ## 📋 API Reference
 
 ### Props
+
+The component extends React Native's `VirtualizedListProps` and accepts all VirtualizedList properties in addition to the masonry-specific props below:
+
+#### Masonry-Specific Props
 
 | Prop                           | Type                                            | Default                                    | Description                         |
 | ------------------------------ | ----------------------------------------------- | ------------------------------------------ | ----------------------------------- |
@@ -321,16 +383,16 @@ const PhotoMasonryGrid = () => {
 | `baseHeight`                   | `number`                                        | `100`                                      | Base height for layout calculations |
 | `aspectRatioFallbacks`         | `number[]`                                      | `[0.56, 0.67, 0.75, 1.0, 1.33, 1.5, 1.78]` | Fallback aspect ratios              |
 | `keyExtractor`                 | `(item: MasonryItem, index: number) => string`  | `(item, index) => item.id \|\| index`      | Extract unique key for each item    |
-| `onEndReached`                 | `() => void`                                    | `undefined`                                | Called when scrolling near end      |
-| `onEndReachedThreshold`        | `number`                                        | `0.1`                                      | Threshold for `onEndReached`        |
-| `refreshing`                   | `boolean`                                       | `false`                                    | Whether list is refreshing          |
-| `onRefresh`                    | `() => void`                                    | `undefined`                                | Called on pull-to-refresh           |
-| `initialNumToRender`           | `number`                                        | `10`                                       | Initial number of items to render   |
-| `maxToRenderPerBatch`          | `number`                                        | `15`                                       | Max items to render per batch       |
-| `windowSize`                   | `number`                                        | `21`                                       | Window size for virtualization      |
-| `style`                        | `ViewStyle`                                     | `undefined`                                | Style for container                 |
-| `contentContainerStyle`        | `ViewStyle`                                     | `undefined`                                | Style for scroll content            |
-| `showsVerticalScrollIndicator` | `boolean`                                       | `false`                                    | Show scroll indicator               |
+
+#### VirtualizedList Props
+
+All [VirtualizedList props](https://reactnative.dev/docs/virtualizedlist) are supported and passed through to the underlying implementation, including:
+
+- **Performance**: `initialNumToRender`, `maxToRenderPerBatch`, `windowSize`, `updateCellsBatchingPeriod`, `removeClippedSubviews`
+- **Scrolling**: `onScroll`, `onScrollBeginDrag`, `onScrollEndDrag`, `onMomentumScrollBegin`, `onMomentumScrollEnd`, `scrollEventThrottle`
+- **Interaction**: `onEndReached`, `onEndReachedThreshold`, `refreshing`, `onRefresh`, `scrollEnabled`, `bounces`
+- **Styling**: `style`, `contentContainerStyle`, `showsVerticalScrollIndicator`
+- **Platform**: `nestedScrollEnabled` (Android), `scrollIndicatorInsets` (iOS)
 
 ### 🔷 Types
 
@@ -405,3 +467,4 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
   Made with ❤️ by <a href="https://github.com/echowaves">Echowaves Corp.</a><br/>
   <em>Powering beautiful photo experiences in <a href="https://github.com/echowaves/WiSaw">WiSaw</a> and beyond</em>
 </p>
+````

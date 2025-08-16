@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewStyle } from 'react-native';
+import { VirtualizedListProps } from 'react-native';
 
 export interface MasonryItem {
   id: string;
@@ -34,7 +34,17 @@ export interface MasonryRenderItemInfo {
   dimensions: MasonryDimensions;
 }
 
-export interface ExpoMasonryLayoutProps {
+export interface ExpoMasonryLayoutProps
+  extends Omit<
+    VirtualizedListProps<MasonryRowData>,
+    | 'data'
+    | 'renderItem'
+    | 'keyExtractor'
+    | 'getItemCount'
+    | 'getItem'
+    | 'getItemLayout'
+    | 'horizontal'
+  > {
   /**
    * Array of data items to render in masonry layout
    */
@@ -73,80 +83,6 @@ export interface ExpoMasonryLayoutProps {
    * Function to extract a unique key for each item
    */
   keyExtractor?: (item: MasonryItem, index: number) => string;
-
-  /**
-   * Called when the user scrolls near the end of the content
-   */
-  onEndReached?: () => void;
-
-  /**
-   * Threshold for onEndReached (0.1 = 10% from bottom)
-   * @default 0.1
-   */
-  onEndReachedThreshold?: number;
-
-  /**
-   * Whether the list is refreshing
-   * @default false
-   */
-  refreshing?: boolean;
-
-  /**
-   * Called when user pulls to refresh
-   */
-  onRefresh?: () => void;
-
-  /**
-   * Performance: Initial number of items to render
-   * @default 10
-   */
-  initialNumToRender?: number;
-
-  /**
-   * Performance: Maximum number of items to render per batch
-   * @default 15
-   */
-  maxToRenderPerBatch?: number;
-
-  /**
-   * Performance: Window size for virtualization
-   * @default 21
-   */
-  windowSize?: number;
-
-  /**
-   * Performance: Update cells batching period in ms
-   * @default 100
-   */
-  updateCellsBatchingPeriod?: number;
-
-  /**
-   * Custom scroll event throttle
-   * @default 16
-   */
-  scrollEventThrottle?: number;
-
-  /**
-   * Custom style for the container
-   */
-  style?: ViewStyle;
-
-  /**
-   * Custom style for the content container
-   */
-  contentContainerStyle?: ViewStyle;
-
-  /**
-   * Whether to show vertical scroll indicator
-   * @default false
-   */
-  showsVerticalScrollIndicator?: boolean;
-
-  /**
-   * Whether to remove clipped subviews for performance
-   * @default false
-   */
-  removeClippedSubviews?: boolean;
 }
 
 export interface MasonryLayoutUtils {

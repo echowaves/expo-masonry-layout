@@ -1,6 +1,6 @@
 {
   "name": "expo-masonry-layout",
-  "version": "1.0.6",
+  "version": "1.0.8",
   "description": "High-performance masonry layout component for React Native and Expo applications",
   "main": "./lib/index.js",
   "module": "./lib/index.js",

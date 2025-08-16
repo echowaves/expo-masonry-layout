@@ -27,19 +27,9 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
   baseHeight = 100,
   aspectRatioFallbacks,
   keyExtractor,
-  onEndReached,
-  onEndReachedThreshold = 0.1,
-  refreshing = false,
-  onRefresh,
-  initialNumToRender = 10,
-  maxToRenderPerBatch = 15,
-  windowSize = 21,
-  updateCellsBatchingPeriod = 100,
-  scrollEventThrottle = 16,
   style,
   contentContainerStyle,
-  showsVerticalScrollIndicator = false,
-  removeClippedSubviews = false,
+  ...virtualizedListProps
 }) => {
   const { width: screenWidth } = useWindowDimensions();
 
@@ -149,36 +139,26 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
   // Container styles
   const containerStyle: ViewStyle = {
     flex: 1,
-    ...style,
+    ...(style as ViewStyle),
   };
 
   const contentStyle: ViewStyle = {
     paddingBottom: 100,
-    ...contentContainerStyle,
+    ...(contentContainerStyle as ViewStyle),
   };
 
   return (
     <VirtualizedList
+      {...virtualizedListProps}
       data={layoutData.rows}
       horizontal={false}
-      initialNumToRender={initialNumToRender}
       renderItem={renderRow}
       keyExtractor={rowKeyExtractor}
       getItemCount={listData => listData?.length || 0}
       getItem={(listData, index) => listData?.[index]}
       getItemLayout={getItemLayout}
-      onEndReached={onEndReached}
-      onEndReachedThreshold={onEndReachedThreshold}
-      refreshing={refreshing}
-      onRefresh={onRefresh}
       style={containerStyle}
       contentContainerStyle={contentStyle}
-      showsVerticalScrollIndicator={showsVerticalScrollIndicator}
-      scrollEventThrottle={scrollEventThrottle}
-      removeClippedSubviews={removeClippedSubviews}
-      maxToRenderPerBatch={maxToRenderPerBatch}
-      updateCellsBatchingPeriod={updateCellsBatchingPeriod}
-      windowSize={windowSize}
       maintainVisibleContentPosition={{
         minIndexForVisible: 0,
         autoscrollToTopThreshold: 10,
