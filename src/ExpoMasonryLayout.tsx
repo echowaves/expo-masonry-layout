@@ -26,6 +26,8 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
   maxItemsPerRow = 6,
   baseHeight = 100,
   aspectRatioFallbacks,
+  preserveItemDimensions = false,
+  getItemDimensions,
   keyExtractor,
   style,
   contentContainerStyle,
@@ -41,7 +43,9 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
       spacing,
       baseHeight,
       maxItemsPerRow,
-      aspectRatioFallbacks
+      aspectRatioFallbacks,
+      preserveItemDimensions,
+      getItemDimensions
     );
   }, [
     data,
@@ -50,6 +54,8 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
     baseHeight,
     maxItemsPerRow,
     aspectRatioFallbacks,
+    preserveItemDimensions,
+    getItemDimensions,
   ]);
 
   // Default key extractor

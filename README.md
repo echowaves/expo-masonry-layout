@@ -372,15 +372,17 @@ The component extends React Native's `VirtualizedListProps` and accepts all Virt
 
 #### Masonry-Specific Props
 
-| Prop                   | Type                                            | Default                                    | Description                         |
-| ---------------------- | ----------------------------------------------- | ------------------------------------------ | ----------------------------------- |
-| `data`                 | `MasonryItem[]`                                 | **required**                               | Array of items to display           |
-| `renderItem`           | `(info: MasonryRenderItemInfo) => ReactElement` | **required**                               | Function to render each item        |
-| `spacing`              | `number`                                        | `6`                                        | Space between items in pixels       |
-| `maxItemsPerRow`       | `number`                                        | `6`                                        | Maximum number of items per row     |
-| `baseHeight`           | `number`                                        | `100`                                      | Base height for layout calculations |
-| `aspectRatioFallbacks` | `number[]`                                      | `[0.56, 0.67, 0.75, 1.0, 1.33, 1.5, 1.78]` | Fallback aspect ratios              |
-| `keyExtractor`         | `(item: MasonryItem, index: number) => string`  | `(item, index) => item.id \|\| index`      | Extract unique key for each item    |
+| Prop                     | Type                                                                              | Default                                    | Description                                            |
+| ------------------------ | --------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------ |
+| `data`                   | `MasonryItem[]`                                                                   | **required**                               | Array of items to display                              |
+| `renderItem`             | `(info: MasonryRenderItemInfo) => ReactElement`                                   | **required**                               | Function to render each item                           |
+| `spacing`                | `number`                                                                          | `6`                                        | Space between items in pixels                          |
+| `maxItemsPerRow`         | `number`                                                                          | `6`                                        | Maximum number of items per row                        |
+| `baseHeight`             | `number`                                                                          | `100`                                      | Base height for layout calculations                    |
+| `aspectRatioFallbacks`   | `number[]`                                                                        | `[0.56, 0.67, 0.75, 1.0, 1.33, 1.5, 1.78]` | Fallback aspect ratios                                 |
+| `preserveItemDimensions` | `boolean`                                                                         | `false`                                    | Whether to respect exact item dimensions when provided |
+| `getItemDimensions`      | `(item: MasonryItem, index: number) => { width: number; height: number } \| null` | `undefined`                                | Function to calculate custom dimensions for items      |
+| `keyExtractor`           | `(item: MasonryItem, index: number) => string`                                    | `(item, index) => item.id \|\| index`      | Extract unique key for each item                       |
 
 #### VirtualizedList Props
 
@@ -401,6 +403,7 @@ interface MasonryItem {
   id: string;
   width?: number;
   height?: number;
+  preserveDimensions?: boolean;
   [key: string]: any;
 }
 ```
@@ -420,7 +423,114 @@ interface MasonryRenderItemInfo {
 }
 ```
 
-## 🎯 Performance Tips
+## � Custom Dimensions
+
+The library supports multiple ways to override the automatic dimension calculation:
+
+### 1. Per-Item Dimension Preservation
+
+Set `preserveDimensions: true` on individual items to use their exact `width` and `height`:
+
+```tsx
+const dataWithExactSizes = [
+  {
+    id: '1',
+    width: 300,
+    height: 200,
+    preserveDimensions: true, // This item will be exactly 300x200
+    imageUrl: 'https://example.com/image1.jpg',
+  },
+  {
+    id: '2',
+    width: 400,
+    height: 300,
+    // No preserveDimensions flag - will be auto-calculated
+    imageUrl: 'https://example.com/image2.jpg',
+  },
+];
+```
+
+### 2. Global Dimension Preservation
+
+Use the `preserveItemDimensions` prop to respect exact dimensions for all items that have `width` and `height`:
+
+```tsx
+<ExpoMasonryLayout
+  data={data}
+  preserveItemDimensions={true}
+  renderItem={renderItem}
+/>
+```
+
+### 3. Custom Dimension Function
+
+Use `getItemDimensions` for dynamic dimension calculation:
+
+```tsx
+const getCustomDimensions = (item, index) => {
+  // Make every 5th item extra wide
+  if (index % 5 === 0) {
+    return { width: 300, height: 150 };
+  }
+
+  // Featured items get special treatment
+  if (item.featured) {
+    return { width: 250, height: 200 };
+  }
+
+  // Return null for auto-calculation
+  return null;
+};
+
+<ExpoMasonryLayout
+  data={data}
+  getItemDimensions={getCustomDimensions}
+  renderItem={renderItem}
+/>;
+```
+
+### 4. Mixed Layout Strategy
+
+Combine all approaches for maximum flexibility:
+
+```tsx
+const mixedData = [
+  {
+    id: '1',
+    width: 200,
+    height: 300,
+    preserveDimensions: true, // Exact size
+  },
+  {
+    id: '2',
+    featured: true, // Will use getItemDimensions
+  },
+  {
+    id: '3',
+    width: 400,
+    height: 300, // Will be auto-calculated unless preserveItemDimensions=true
+  },
+];
+
+<ExpoMasonryLayout
+  data={mixedData}
+  preserveItemDimensions={false}
+  getItemDimensions={(item, index) => {
+    if (item.featured) return { width: 250, height: 200 };
+    return null;
+  }}
+  renderItem={renderItem}
+/>;
+```
+
+**Priority Order:**
+
+1. `getItemDimensions` function result (highest priority)
+2. `preserveDimensions: true` on item + item's `width`/`height`
+3. `preserveItemDimensions: true` prop + item's `width`/`height`
+4. Auto-calculated from aspect ratio (lowest priority)
+
+## �🎯 Performance Tips
 
 1. **Provide Image Dimensions**: Include `width` and `height` in your data items for optimal layout calculation
 2. **Memoize Render Function**: Use `useCallback` for your `renderItem` function

@@ -15,6 +15,51 @@ const DEFAULT_ASPECT_RATIOS = [
 ];
 
 /**
+ * Calculates dimensions for an item using various strategies
+ */
+function calculateItemDimensions(
+  item: MasonryItem,
+  itemIndex: number,
+  baseHeight: number,
+  aspectRatioFallbacks: number[] = DEFAULT_ASPECT_RATIOS,
+  preserveItemDimensions: boolean = false,
+  getItemDimensions?: (
+    item: MasonryItem,
+    index: number
+  ) => { width: number; height: number } | null
+): { width: number; height: number } {
+  // First priority: Custom dimension function
+  if (getItemDimensions) {
+    const customDimensions = getItemDimensions(item, itemIndex);
+    if (
+      customDimensions &&
+      customDimensions.width > 0 &&
+      customDimensions.height > 0
+    ) {
+      return customDimensions;
+    }
+  }
+
+  // Second priority: Preserve exact dimensions if requested and available
+  if (preserveItemDimensions || item.preserveDimensions) {
+    if (item.width && item.height && item.width > 0 && item.height > 0) {
+      return { width: item.width, height: item.height };
+    }
+  }
+
+  // Third priority: Calculate from aspect ratio
+  const aspectRatio = calculateAspectRatio(
+    item,
+    itemIndex,
+    aspectRatioFallbacks
+  );
+  return {
+    width: Math.floor(baseHeight * aspectRatio),
+    height: baseHeight,
+  };
+}
+
+/**
  * Calculates aspect ratio for an item using various fallback strategies
  */
 function calculateAspectRatio(
@@ -50,6 +95,8 @@ function calculateAspectRatio(
  * @param baseHeight - Base height for initial scaling (default: 100)
  * @param maxItemsPerRow - Maximum items per row (default: 6)
  * @param aspectRatioFallbacks - Fallback aspect ratios
+ * @param preserveItemDimensions - Whether to respect exact item dimensions
+ * @param getItemDimensions - Custom dimension calculation function
  * @returns Layout data with positioned rows and items
  */
 export function calculateRowMasonryLayout(
@@ -58,7 +105,12 @@ export function calculateRowMasonryLayout(
   spacing: number = 6,
   baseHeight: number = 100,
   maxItemsPerRow: number = 6,
-  aspectRatioFallbacks: number[] = DEFAULT_ASPECT_RATIOS
+  aspectRatioFallbacks: number[] = DEFAULT_ASPECT_RATIOS,
+  preserveItemDimensions: boolean = false,
+  getItemDimensions?: (
+    item: MasonryItem,
+    index: number
+  ) => { width: number; height: number } | null
 ): MasonryLayoutData {
   const rows: MasonryRowData[] = [];
   const availableWidth = screenWidth - spacing * 2; // Account for left/right padding
@@ -86,28 +138,33 @@ export function calculateRowMasonryLayout(
       i++
     ) {
       const item = remainingItems[i];
-      const aspectRatio = calculateAspectRatio(
+      const dimensions = calculateItemDimensions(
         item,
         globalItemIndex + i,
-        aspectRatioFallbacks
+        baseHeight,
+        aspectRatioFallbacks,
+        preserveItemDimensions,
+        getItemDimensions
       );
 
-      const scaledWidth = Math.floor(baseHeight * aspectRatio);
       const spacingNeeded = currentRowItems.length > 0 ? spacing : 0;
       const wouldFitInRow =
-        currentRowWidth + scaledWidth + spacingNeeded <= availableWidth;
+        currentRowWidth + dimensions.width + spacingNeeded <= availableWidth;
 
       if (wouldFitInRow) {
+        // For items with preserved dimensions, we need to track the aspect ratio
+        const aspectRatio = dimensions.width / dimensions.height;
+
         currentRowItems.push({
           ...item,
-          width: scaledWidth,
-          height: baseHeight,
+          width: dimensions.width,
+          height: dimensions.height,
           masonryIndex: globalItemIndex + i,
           aspectRatio,
           left: 0, // Will be calculated later
           top: 0, // Will be calculated later
         });
-        currentRowWidth += scaledWidth + spacingNeeded;
+        currentRowWidth += dimensions.width + spacingNeeded;
       } else {
         // Row is full, stop adding items
         break;
@@ -117,16 +174,20 @@ export function calculateRowMasonryLayout(
     // Ensure at least one item per row to prevent infinite loops
     if (currentRowItems.length === 0 && remainingItems.length > 0) {
       const item = remainingItems[0];
-      const aspectRatio = calculateAspectRatio(
+      const dimensions = calculateItemDimensions(
         item,
         globalItemIndex,
-        aspectRatioFallbacks
+        baseHeight,
+        aspectRatioFallbacks,
+        preserveItemDimensions,
+        getItemDimensions
       );
+      const aspectRatio = dimensions.width / dimensions.height;
 
       currentRowItems.push({
         ...item,
-        width: Math.floor(baseHeight * aspectRatio),
-        height: baseHeight,
+        width: dimensions.width,
+        height: dimensions.height,
         masonryIndex: globalItemIndex,
         aspectRatio,
         left: 0,
@@ -134,17 +195,28 @@ export function calculateRowMasonryLayout(
       });
     }
 
-    // Step 2: Normalize heights (they should already be baseHeight)
-    const maxHeight = Math.max(...currentRowItems.map(item => item.height));
-    currentRowItems.forEach(item => {
-      if (item.height !== maxHeight) {
-        const heightScaleFactor = maxHeight / item.height;
-        item.width = Math.floor(item.width * heightScaleFactor);
-        item.height = maxHeight;
-      }
-    });
+    // Step 2: Normalize heights for auto-calculated items only
+    // Items with preserved dimensions should maintain their exact size
+    const hasPreservedItems = currentRowItems.some(
+      item =>
+        (preserveItemDimensions || item.preserveDimensions) &&
+        item.width &&
+        item.height
+    );
 
-    // Step 3: Scale entire row to fit available width
+    if (!hasPreservedItems) {
+      // Original behavior: normalize all heights
+      const maxHeight = Math.max(...currentRowItems.map(item => item.height));
+      currentRowItems.forEach(item => {
+        if (item.height !== maxHeight) {
+          const heightScaleFactor = maxHeight / item.height;
+          item.width = Math.floor(item.width * heightScaleFactor);
+          item.height = maxHeight;
+        }
+      });
+    }
+
+    // Step 3: Scale row to fit available width (but respect preserved dimensions)
     const totalItemWidth = currentRowItems.reduce(
       (sum, item) => sum + item.width,
       0
@@ -152,13 +224,17 @@ export function calculateRowMasonryLayout(
     const totalSpacing = (currentRowItems.length - 1) * spacing;
     const totalUsedWidth = totalItemWidth + totalSpacing;
 
-    if (totalUsedWidth > 0) {
+    if (totalUsedWidth > 0 && !hasPreservedItems) {
+      // Only scale if no items have preserved dimensions
       const widthRatio = availableWidth / totalUsedWidth;
 
       currentRowItems.forEach(item => {
         item.width = Math.floor(item.width * widthRatio);
         item.height = Math.floor(item.height * widthRatio);
       });
+    } else if (hasPreservedItems && totalUsedWidth > availableWidth) {
+      // If preserved items overflow, we let them overflow to maintain exact dimensions
+      // The layout will still work, items will just extend beyond the container width
     }
 
     // Step 4: Calculate final row height and positions

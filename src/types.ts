@@ -5,6 +5,7 @@ export interface MasonryItem {
   id: string;
   width?: number;
   height?: number;
+  preserveDimensions?: boolean;
   [key: string]: unknown;
 }
 
@@ -80,6 +81,21 @@ export interface ExpoMasonryLayoutProps
   aspectRatioFallbacks?: number[];
 
   /**
+   * Whether to respect exact item dimensions when provided
+   * @default false
+   */
+  preserveItemDimensions?: boolean;
+
+  /**
+   * Function to calculate custom dimensions for items
+   * Return null to use auto-calculation
+   */
+  getItemDimensions?: (
+    item: MasonryItem,
+    index: number
+  ) => { width: number; height: number } | null;
+
+  /**
    * Function to extract a unique key for each item
    */
   keyExtractor?: (item: MasonryItem, index: number) => string;
@@ -92,6 +108,11 @@ export interface MasonryLayoutUtils {
     spacing?: number,
     baseHeight?: number,
     maxItemsPerRow?: number,
-    aspectRatioFallbacks?: number[]
+    aspectRatioFallbacks?: number[],
+    preserveItemDimensions?: boolean,
+    getItemDimensions?: (
+      item: MasonryItem,
+      index: number
+    ) => { width: number; height: number } | null
   ) => MasonryLayoutData;
 }
