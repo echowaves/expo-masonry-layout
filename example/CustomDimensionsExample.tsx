@@ -1,10 +1,11 @@
 // Example: Custom Dimensions Usage
+import React from 'react'
+import { Image, Text, View } from 'react-native'
 
 import ExpoMasonryLayout, {
   MasonryItem,
   MasonryRenderItemInfo,
-} from 'expo-masonry-layout';
-import { Image, Text, View } from 'react-native';
+} from 'expo-masonry-layout'
 
 // Example 1: Using preserveDimensions per item
 const dataWithMixedSizing: MasonryItem[] = [
@@ -120,7 +121,7 @@ export const ExactDimensionsExample = () => {
       data={exactSizeData}
       renderItem={({ item, dimensions }) => (
         <Image
-          source={{ uri: item.imageUrl }}
+          source={{ uri: item.imageUrl as string }}
           style={{
             width: dimensions.width,
             height: dimensions.height,
