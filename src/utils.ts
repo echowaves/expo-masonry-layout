@@ -1,4 +1,4 @@
-import { MasonryItem, MasonryLayoutData, MasonryRowData } from './types';
+import { MasonryItem, MasonryLayoutData, MasonryRowData } from './types'
 
 /**
  * Default aspect ratios for when image dimensions are not available
@@ -23,14 +23,14 @@ function calculateItemDimensions(
   baseHeight: number,
   aspectRatioFallbacks: number[] = DEFAULT_ASPECT_RATIOS,
   preserveItemDimensions: boolean = false,
-  getItemDimensions?: (
+  customDimensionsFn?: (
     item: MasonryItem,
     index: number
   ) => { width: number; height: number } | null
 ): { width: number; height: number } {
   // First priority: Custom dimension function
-  if (getItemDimensions) {
-    const customDimensions = getItemDimensions(item, itemIndex);
+  if (customDimensionsFn) {
+    const customDimensions = customDimensionsFn(item, itemIndex);
     if (
       customDimensions &&
       customDimensions.width > 0 &&
@@ -96,7 +96,7 @@ function calculateAspectRatio(
  * @param maxItemsPerRow - Maximum items per row (default: 6)
  * @param aspectRatioFallbacks - Fallback aspect ratios
  * @param preserveItemDimensions - Whether to respect exact item dimensions
- * @param getItemDimensions - Custom dimension calculation function
+ * @param customDimensionsFn - Custom dimension calculation function
  * @returns Layout data with positioned rows and items
  */
 export function calculateRowMasonryLayout(
@@ -107,7 +107,7 @@ export function calculateRowMasonryLayout(
   maxItemsPerRow: number = 6,
   aspectRatioFallbacks: number[] = DEFAULT_ASPECT_RATIOS,
   preserveItemDimensions: boolean = false,
-  getItemDimensions?: (
+  customDimensionsFn?: (
     item: MasonryItem,
     index: number
   ) => { width: number; height: number } | null
@@ -144,7 +144,7 @@ export function calculateRowMasonryLayout(
         baseHeight,
         aspectRatioFallbacks,
         preserveItemDimensions,
-        getItemDimensions
+        customDimensionsFn
       );
 
       const spacingNeeded = currentRowItems.length > 0 ? spacing : 0;
@@ -180,7 +180,7 @@ export function calculateRowMasonryLayout(
         baseHeight,
         aspectRatioFallbacks,
         preserveItemDimensions,
-        getItemDimensions
+        customDimensionsFn
       );
       const aspectRatio = dimensions.width / dimensions.height;
 
