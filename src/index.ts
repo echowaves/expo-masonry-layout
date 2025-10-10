@@ -10,6 +10,6 @@ export type {
   MasonryLayoutData,
   MasonryLayoutUtils,
   MasonryRenderItemInfo,
-  MasonryRowData,
+  MasonryRowData
 } from './types';
 export { calculateRowMasonryLayout, getItemDimensions } from './utils';

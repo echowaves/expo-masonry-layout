@@ -1,11 +1,5 @@
 import React, { useCallback, useMemo } from 'react';
-import {
-  StyleSheet,
-  useWindowDimensions,
-  View,
-  ViewStyle,
-  VirtualizedList,
-} from 'react-native';
+import { StyleSheet, useWindowDimensions, View, ViewStyle, VirtualizedList } from 'react-native';
 import { ExpoMasonryLayoutProps, MasonryItem, MasonryRowData } from './types';
 import { calculateRowMasonryLayout } from './utils';
 
@@ -55,16 +49,13 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
     maxItemsPerRow,
     aspectRatioFallbacks,
     preserveItemDimensions,
-    getItemDimensions,
+    getItemDimensions
   ]);
 
   // Default key extractor
-  const defaultKeyExtractor = useCallback(
-    (item: MasonryItem, index: number) => {
-      return item.id?.toString() || index.toString();
-    },
-    []
-  );
+  const defaultKeyExtractor = useCallback((item: MasonryItem, index: number) => {
+    return item.id?.toString() || index.toString();
+  }, []);
 
   const getKeyExtractor = keyExtractor || defaultKeyExtractor;
 
@@ -81,11 +72,11 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
             styles.rowContainer,
             {
               height: row.height,
-              marginBottom: spacing,
-            },
+              marginBottom: spacing
+            }
           ]}
         >
-          {row.items.map(photo => (
+          {row.items.map((photo) => (
             <View
               key={getKeyExtractor(photo, photo.masonryIndex)}
               style={[
@@ -94,8 +85,8 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
                   top: photo.top,
                   left: photo.left,
                   width: photo.width,
-                  height: photo.height,
-                },
+                  height: photo.height
+                }
               ]}
             >
               {renderItem({
@@ -105,8 +96,8 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
                   width: photo.width,
                   height: photo.height,
                   left: photo.left,
-                  top: photo.top,
-                },
+                  top: photo.top
+                }
               })}
             </View>
           ))}
@@ -128,7 +119,7 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
         return {
           length: baseHeight + spacing,
           offset: index * (baseHeight + spacing),
-          index,
+          index
         };
       }
 
@@ -136,7 +127,7 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
       return {
         length: row.height + spacing,
         offset: row.top || 0,
-        index,
+        index
       };
     },
     [baseHeight, spacing]
@@ -145,12 +136,12 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
   // Container styles
   const containerStyle: ViewStyle = {
     flex: 1,
-    ...(style as ViewStyle),
+    ...(style as ViewStyle)
   };
 
   const contentStyle: ViewStyle = {
     paddingBottom: 100,
-    ...(contentContainerStyle as ViewStyle),
+    ...(contentContainerStyle as ViewStyle)
   };
 
   return (
@@ -160,14 +151,14 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
       horizontal={false}
       renderItem={renderRow}
       keyExtractor={rowKeyExtractor}
-      getItemCount={listData => listData?.length || 0}
+      getItemCount={(listData) => listData?.length || 0}
       getItem={(listData, index) => listData?.[index]}
       getItemLayout={getItemLayout}
       style={containerStyle}
       contentContainerStyle={contentStyle}
       maintainVisibleContentPosition={{
         minIndexForVisible: 0,
-        autoscrollToTopThreshold: 10,
+        autoscrollToTopThreshold: 10
       }}
     />
   );
@@ -177,9 +168,9 @@ export default ExpoMasonryLayout;
 
 const styles = StyleSheet.create({
   rowContainer: {
-    position: 'relative',
+    position: 'relative'
   },
   itemContainer: {
-    position: 'absolute',
-  },
+    position: 'absolute'
+  }
 });

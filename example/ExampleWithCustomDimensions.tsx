@@ -1,12 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import {
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import ExpoMasonryLayout, { MasonryItem, MasonryRenderItemInfo } from '../src';
 
 // Sample data demonstrating different dimension override strategies
@@ -15,7 +8,7 @@ const sampleData = Array.from({ length: 30 }, (_, index) => {
     id: `item-${index}`,
     title: `Photo ${index + 1}`,
     imageUrl: `https://picsum.photos/${Math.floor(Math.random() * 200) + 200}/${Math.floor(Math.random() * 200) + 200}?random=${index}`,
-    likes: Math.floor(Math.random() * 100),
+    likes: Math.floor(Math.random() * 100)
   };
 
   // Different strategies for different items
@@ -26,7 +19,7 @@ const sampleData = Array.from({ length: 30 }, (_, index) => {
       width: 300,
       height: 200,
       preserveDimensions: true,
-      title: `Featured: ${baseItem.title}`,
+      title: `Featured: ${baseItem.title}`
     };
   } else if (index % 5 === 0) {
     // Every 5th item: Square with exact dimensions
@@ -35,7 +28,7 @@ const sampleData = Array.from({ length: 30 }, (_, index) => {
       width: 150,
       height: 150,
       preserveDimensions: true,
-      title: `Square: ${baseItem.title}`,
+      title: `Square: ${baseItem.title}`
     };
   } else if (index % 3 === 0) {
     // Every 3rd item: Tall portrait with custom dimensions
@@ -43,14 +36,14 @@ const sampleData = Array.from({ length: 30 }, (_, index) => {
       ...baseItem,
       width: 120,
       height: 180,
-      title: `Portrait: ${baseItem.title}`,
+      title: `Portrait: ${baseItem.title}`
     };
   } else {
     // Regular items: Auto-calculated dimensions
     return {
       ...baseItem,
       width: Math.floor(Math.random() * 200) + 200,
-      height: Math.floor(Math.random() * 200) + 200,
+      height: Math.floor(Math.random() * 200) + 200
     };
   }
 });
@@ -86,20 +79,16 @@ const ExampleWithCustomDimensions: React.FC = () => {
             styles.itemContainer,
             {
               width: dimensions.width,
-              height: dimensions.height,
+              height: dimensions.height
             },
             isFeature && styles.featuredItem,
             isSquare && styles.squareItem,
-            isPortrait && styles.portraitItem,
+            isPortrait && styles.portraitItem
           ]}
           onPress={() => handleItemPress(item)}
           activeOpacity={0.8}
         >
-          <Image
-            source={{ uri: item.imageUrl }}
-            style={styles.image}
-            resizeMode="cover"
-          />
+          <Image source={{ uri: item.imageUrl }} style={styles.image} resizeMode="cover" />
           <View style={styles.overlay}>
             <Text style={styles.title} numberOfLines={2}>
               {item.title}
@@ -129,8 +118,7 @@ const ExampleWithCustomDimensions: React.FC = () => {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Custom Dimensions Demo</Text>
         <Text style={styles.headerSubtitle}>
-          Mode:{' '}
-          {preserveDimensions ? 'Preserve Exact Dimensions' : 'Auto-Calculate'}
+          Mode: {preserveDimensions ? 'Preserve Exact Dimensions' : 'Auto-Calculate'}
         </Text>
       </View>
 
@@ -153,26 +141,26 @@ const ExampleWithCustomDimensions: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f5f5f5'
   },
   header: {
     padding: 16,
     backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    borderBottomColor: '#e0e0e0'
   },
   headerTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#333'
   },
   headerSubtitle: {
     fontSize: 14,
     color: '#666',
-    marginTop: 4,
+    marginTop: 4
   },
   masonryContainer: {
-    flex: 1,
+    flex: 1
   },
   itemContainer: {
     borderRadius: 12,
@@ -182,26 +170,26 @@ const styles = StyleSheet.create({
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 2
     },
     shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    shadowRadius: 3.84
   },
   featuredItem: {
     borderWidth: 3,
-    borderColor: '#ff6b6b',
+    borderColor: '#ff6b6b'
   },
   squareItem: {
     borderWidth: 2,
-    borderColor: '#4ecdc4',
+    borderColor: '#4ecdc4'
   },
   portraitItem: {
     borderWidth: 2,
-    borderColor: '#45b7d1',
+    borderColor: '#45b7d1'
   },
   image: {
     width: '100%',
-    flex: 1,
+    flex: 1
   },
   overlay: {
     position: 'absolute',
@@ -209,17 +197,17 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    padding: 8,
+    padding: 8
   },
   title: {
     color: '#fff',
     fontSize: 12,
-    fontWeight: 'bold',
+    fontWeight: 'bold'
   },
   subtitle: {
     color: '#ccc',
     fontSize: 10,
-    marginTop: 2,
+    marginTop: 2
   },
   badge: {
     position: 'absolute',
@@ -228,13 +216,13 @@ const styles = StyleSheet.create({
     backgroundColor: '#ff6b6b',
     paddingHorizontal: 6,
     paddingVertical: 2,
-    borderRadius: 4,
+    borderRadius: 4
   },
   badgeText: {
     color: '#fff',
     fontSize: 8,
-    fontWeight: 'bold',
-  },
+    fontWeight: 'bold'
+  }
 });
 
 export default ExampleWithCustomDimensions;

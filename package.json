@@ -25,8 +25,10 @@
     "clean": "rm -rf lib",
     "prepublishOnly": "npm run clean && npm run build",
     "test": "jest",
-    "lint": "eslint src --ext .ts,.tsx",
-    "lint:fix": "eslint src --ext .ts,.tsx --fix"
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,css,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,css,md}\""
   },
   "files": [
     "lib",
@@ -57,13 +59,20 @@
     "react-native": ">=0.70.0"
   },
   "devDependencies": {
+    "@babel/core": "^7.28.4",
+    "@babel/eslint-parser": "^7.23.0",
+    "@babel/preset-env": "^7.28.3",
+    "@babel/preset-typescript": "^7.27.1",
+    "@eslint/eslintrc": "^3.0.0",
     "@react-native-community/eslint-config": "3.2.0",
     "@types/react": "18.2.0",
     "@types/react-native": "0.72.0",
     "@typescript-eslint/eslint-plugin": "6.0.0",
     "@typescript-eslint/parser": "6.0.0",
     "eslint": "8.57.1",
+    "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "9.1.0",
+    "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-prettier": "5.2.1",
     "eslint-plugin-react": "7.37.2",
     "eslint-plugin-react-hooks": "4.6.2",

@@ -108,7 +108,7 @@ const CachedMasonryGrid = () => {
   const data = [
     { id: '1', uri: 'https://example.com/image1.jpg', width: 300, height: 400 },
     { id: '2', uri: 'https://example.com/image2.jpg', width: 400, height: 300 },
-    { id: '3', uri: 'https://example.com/image3.jpg', width: 300, height: 300 },
+    { id: '3', uri: 'https://example.com/image3.jpg', width: 300, height: 300 }
     // ... more items
   ];
 
@@ -125,7 +125,7 @@ const CachedMasonryGrid = () => {
               flex: 1,
               backgroundColor: '#f0f0f0',
               justifyContent: 'center',
-              alignItems: 'center',
+              alignItems: 'center'
             }}
           />
         }
@@ -138,7 +138,7 @@ const CachedMasonryGrid = () => {
       data={data}
       renderItem={renderItem}
       spacing={6}
-      keyExtractor={item => item.id}
+      keyExtractor={(item) => item.id}
     />
   );
 };
@@ -168,7 +168,7 @@ const clearImageCache = async () => {
 };
 
 // Clear cache for specific images
-const clearSpecificCache = async imageId => {
+const clearSpecificCache = async (imageId) => {
   await CachedImage.clearCache(`masonry-${imageId}`);
 };
 ```
@@ -202,7 +202,7 @@ const PhotoMasonryGrid = () => {
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.1,
           shadowRadius: 4,
-          elevation: 3,
+          elevation: 3
         }}
         onPress={() => handlePhotoPress(item)}
         activeOpacity={0.9}
@@ -211,7 +211,7 @@ const PhotoMasonryGrid = () => {
           source={{ uri: item.imageUrl }}
           style={{
             width: '100%',
-            height: '85%',
+            height: '85%'
           }}
           resizeMode="cover"
           loadingIndicatorSource={require('./placeholder.png')}
@@ -223,14 +223,14 @@ const PhotoMasonryGrid = () => {
             left: 0,
             right: 0,
             backgroundColor: 'rgba(0,0,0,0.7)',
-            padding: 8,
+            padding: 8
           }}
         >
           <Text
             style={{
               color: 'white',
               fontSize: 12,
-              fontWeight: '600',
+              fontWeight: '600'
             }}
             numberOfLines={1}
           >
@@ -240,7 +240,7 @@ const PhotoMasonryGrid = () => {
             style={{
               color: 'rgba(255,255,255,0.8)',
               fontSize: 10,
-              marginTop: 2,
+              marginTop: 2
             }}
           >
             ❤️ {item.likes} • 👤 {item.username}
@@ -251,7 +251,7 @@ const PhotoMasonryGrid = () => {
     []
   );
 
-  const handlePhotoPress = useCallback(photo => {
+  const handlePhotoPress = useCallback((photo) => {
     // Navigate to photo detail view (like in WiSaw)
     console.log('Photo pressed:', photo.id);
   }, []);
@@ -276,7 +276,7 @@ const PhotoMasonryGrid = () => {
     try {
       // Load more photos for infinite scroll
       const morePhotos = await fetchMorePhotos(photos.length);
-      setPhotos(prevPhotos => [...prevPhotos, ...morePhotos]);
+      setPhotos((prevPhotos) => [...prevPhotos, ...morePhotos]);
     } catch (error) {
       console.error('Error loading more photos:', error);
     } finally {
@@ -291,7 +291,7 @@ const PhotoMasonryGrid = () => {
       spacing={8}
       maxItemsPerRow={2} // WiSaw uses 2 columns for optimal photo viewing
       baseHeight={200}
-      keyExtractor={item => item.id}
+      keyExtractor={(item) => item.id}
       refreshing={refreshing}
       onRefresh={handleRefresh}
       onEndReached={handleLoadMore}
@@ -438,15 +438,15 @@ const dataWithExactSizes = [
     width: 300,
     height: 200,
     preserveDimensions: true, // This item will be exactly 300x200
-    imageUrl: 'https://example.com/image1.jpg',
+    imageUrl: 'https://example.com/image1.jpg'
   },
   {
     id: '2',
     width: 400,
     height: 300,
     // No preserveDimensions flag - will be auto-calculated
-    imageUrl: 'https://example.com/image2.jpg',
-  },
+    imageUrl: 'https://example.com/image2.jpg'
+  }
 ];
 ```
 
@@ -455,11 +455,7 @@ const dataWithExactSizes = [
 Use the `preserveItemDimensions` prop to respect exact dimensions for all items that have `width` and `height`:
 
 ```tsx
-<ExpoMasonryLayout
-  data={data}
-  preserveItemDimensions={true}
-  renderItem={renderItem}
-/>
+<ExpoMasonryLayout data={data} preserveItemDimensions={true} renderItem={renderItem} />
 ```
 
 ### 3. Custom Dimension Function
@@ -482,11 +478,7 @@ const getCustomDimensions = (item, index) => {
   return null;
 };
 
-<ExpoMasonryLayout
-  data={data}
-  getItemDimensions={getCustomDimensions}
-  renderItem={renderItem}
-/>;
+<ExpoMasonryLayout data={data} getItemDimensions={getCustomDimensions} renderItem={renderItem} />;
 ```
 
 ### 4. Mixed Layout Strategy
@@ -499,17 +491,17 @@ const mixedData = [
     id: '1',
     width: 200,
     height: 300,
-    preserveDimensions: true, // Exact size
+    preserveDimensions: true // Exact size
   },
   {
     id: '2',
-    featured: true, // Will use getItemDimensions
+    featured: true // Will use getItemDimensions
   },
   {
     id: '3',
     width: 400,
-    height: 300, // Will be auto-calculated unless preserveItemDimensions=true
-  },
+    height: 300 // Will be auto-calculated unless preserveItemDimensions=true
+  }
 ];
 
 <ExpoMasonryLayout

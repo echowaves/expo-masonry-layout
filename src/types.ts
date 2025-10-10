@@ -17,8 +17,7 @@ export interface MasonryDimensions {
 }
 
 export interface MasonryRowData {
-  items: (MasonryItem &
-    MasonryDimensions & { masonryIndex: number; aspectRatio: number })[];
+  items: (MasonryItem & MasonryDimensions & { masonryIndex: number; aspectRatio: number })[];
   height: number;
   top: number;
   rowIndex: number;

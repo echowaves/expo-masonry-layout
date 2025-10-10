@@ -59,26 +59,22 @@ const data = [
     width: 300,
     height: 200,
     preserveDimensions: true, // Exact 300x200
-    imageUrl: 'https://example.com/featured.jpg',
+    imageUrl: 'https://example.com/featured.jpg'
   },
   {
     id: '2',
     width: 400,
     height: 300,
     // Auto-calculated
-    imageUrl: 'https://example.com/regular.jpg',
-  },
+    imageUrl: 'https://example.com/regular.jpg'
+  }
 ];
 ```
 
 ### Global Preservation
 
 ```tsx
-<ExpoMasonryLayout
-  data={data}
-  preserveItemDimensions={true}
-  renderItem={renderItem}
-/>
+<ExpoMasonryLayout data={data} preserveItemDimensions={true} renderItem={renderItem} />
 ```
 
 ### Custom Calculator

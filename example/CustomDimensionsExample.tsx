@@ -1,11 +1,7 @@
 // Example: Custom Dimensions Usage
-import React from 'react'
-import { Image, Text, View } from 'react-native'
+import { Image, Text, View } from 'react-native';
 
-import ExpoMasonryLayout, {
-  MasonryItem,
-  MasonryRenderItemInfo,
-} from 'expo-masonry-layout'
+import ExpoMasonryLayout, { MasonryItem, MasonryRenderItemInfo } from 'expo-masonry-layout';
 
 // Example 1: Using preserveDimensions per item
 const dataWithMixedSizing: MasonryItem[] = [
@@ -15,7 +11,7 @@ const dataWithMixedSizing: MasonryItem[] = [
     width: 300,
     height: 200,
     preserveDimensions: true, // This item will be exactly 300x200
-    title: 'Featured Image - Exact Size',
+    title: 'Featured Image - Exact Size'
   },
   {
     id: '2',
@@ -23,7 +19,7 @@ const dataWithMixedSizing: MasonryItem[] = [
     width: 400,
     height: 300,
     // No preserveDimensions - will be auto-calculated
-    title: 'Auto-sized Image',
+    title: 'Auto-sized Image'
   },
   {
     id: '3',
@@ -31,8 +27,8 @@ const dataWithMixedSizing: MasonryItem[] = [
     width: 150,
     height: 150,
     preserveDimensions: true, // Square exact size
-    title: 'Square Thumbnail',
-  },
+    title: 'Square Thumbnail'
+  }
 ];
 
 // Example 2: Custom dimension calculator
@@ -60,7 +56,7 @@ export const CustomDimensionsExample = () => {
         height: dimensions.height,
         backgroundColor: '#f0f0f0',
         borderRadius: 8,
-        overflow: 'hidden',
+        overflow: 'hidden'
       }}
     >
       <Image
@@ -100,20 +96,20 @@ export const ExactDimensionsExample = () => {
       id: '1',
       width: 200,
       height: 300,
-      imageUrl: 'https://picsum.photos/200/300',
+      imageUrl: 'https://picsum.photos/200/300'
     },
     {
       id: '2',
       width: 150,
       height: 150,
-      imageUrl: 'https://picsum.photos/150/150',
+      imageUrl: 'https://picsum.photos/150/150'
     },
     {
       id: '3',
       width: 250,
       height: 180,
-      imageUrl: 'https://picsum.photos/250/180',
-    },
+      imageUrl: 'https://picsum.photos/250/180'
+    }
   ];
 
   return (
@@ -125,7 +121,7 @@ export const ExactDimensionsExample = () => {
           style={{
             width: dimensions.width,
             height: dimensions.height,
-            borderRadius: 4,
+            borderRadius: 4
           }}
         />
       )}
