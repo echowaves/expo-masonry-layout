@@ -53,8 +53,8 @@
   },
   "homepage": "https://github.com/echowaves/expo-masonry-layout#readme",
   "peerDependencies": {
-    "react": "^18.0.0",
-    "react-native": "^0.70.0"
+    "react": ">=18.0.0",
+    "react-native": ">=0.70.0"
   },
   "devDependencies": {
     "@react-native-community/eslint-config": "3.2.0",
