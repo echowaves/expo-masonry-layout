@@ -1,4 +1,5 @@
 import { MasonryItem, MasonryLayoutData, MasonryRowData } from './types';
+
 /**
  * Default aspect ratios for when image dimensions are not available
  * Covers common photo/image ratios from portrait to landscape
