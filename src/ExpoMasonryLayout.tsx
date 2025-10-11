@@ -23,6 +23,7 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
   preserveItemDimensions = false,
   getItemDimensions,
   keyExtractor,
+  onItemLayout,
   style,
   contentContainerStyle,
   ...virtualizedListProps
@@ -61,7 +62,7 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
 
   // Render a single row containing multiple masonry items
   const renderRow = useCallback(
-    ({ item: row }: { item: MasonryRowData }) => {
+    ({ item: row }: { item: MasonryRowData; }) => {
       if (!row || !row.items || row.items.length === 0) {
         return null;
       }
@@ -76,35 +77,44 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
             }
           ]}
         >
-          {row.items.map((photo) => (
-            <View
-              key={getKeyExtractor(photo, photo.masonryIndex)}
-              style={[
-                styles.itemContainer,
-                {
-                  top: photo.top,
-                  left: photo.left,
-                  width: photo.width,
-                  height: photo.height
-                }
-              ]}
-            >
-              {renderItem({
-                item: photo,
-                index: photo.masonryIndex,
-                dimensions: {
-                  width: photo.width,
-                  height: photo.height,
-                  left: photo.left,
-                  top: photo.top
-                }
-              })}
-            </View>
-          ))}
+          {row.items.map((photo) => {
+            const itemInfo = {
+              item: photo,
+              index: photo.masonryIndex,
+              dimensions: {
+                width: photo.width,
+                height: photo.height,
+                left: photo.left,
+                top: photo.top
+              }
+            };
+
+            // Call the onItemLayout callback if provided
+            if (onItemLayout) {
+              onItemLayout(itemInfo);
+            }
+
+            return (
+              <View
+                key={getKeyExtractor(photo, photo.masonryIndex)}
+                style={[
+                  styles.itemContainer,
+                  {
+                    top: photo.top,
+                    left: photo.left,
+                    width: photo.width,
+                    height: photo.height
+                  }
+                ]}
+              >
+                {renderItem(itemInfo)}
+              </View>
+            );
+          })}
         </View>
       );
     },
-    [renderItem, spacing, getKeyExtractor]
+    [renderItem, spacing, getKeyExtractor, onItemLayout]
   );
 
   // Row key extractor

@@ -98,4 +98,10 @@ export interface ExpoMasonryLayoutProps
    * Function to extract a unique key for each item
    */
   keyExtractor?: (item: MasonryItem, index: number) => string;
+
+  /**
+   * Callback invoked when an item's layout dimensions are calculated
+   * Provides the item, its index, and calculated dimensions
+   */
+  onItemLayout?: (info: MasonryRenderItemInfo) => void;
 }
