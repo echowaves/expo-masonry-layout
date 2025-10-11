@@ -8,8 +8,8 @@ export type {
   MasonryDimensions,
   MasonryItem,
   MasonryLayoutData,
-  MasonryLayoutUtils,
   MasonryRenderItemInfo,
   MasonryRowData
 } from './types';
-export { calculateRowMasonryLayout, getItemDimensions } from './utils';
+export { calculateRowMasonryLayout } from './utils';
+

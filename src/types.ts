@@ -17,7 +17,7 @@ export interface MasonryDimensions {
 }
 
 export interface MasonryRowData {
-  items: (MasonryItem & MasonryDimensions & { masonryIndex: number; aspectRatio: number })[];
+  items: (MasonryItem & MasonryDimensions & { masonryIndex: number; aspectRatio: number; })[];
   height: number;
   top: number;
   rowIndex: number;
@@ -92,26 +92,10 @@ export interface ExpoMasonryLayoutProps
   getItemDimensions?: (
     item: MasonryItem,
     index: number
-  ) => { width: number; height: number } | null;
+  ) => { width: number; height: number; } | null;
 
   /**
    * Function to extract a unique key for each item
    */
   keyExtractor?: (item: MasonryItem, index: number) => string;
-}
-
-export interface MasonryLayoutUtils {
-  calculateRowMasonryLayout: (
-    data: MasonryItem[],
-    screenWidth: number,
-    spacing?: number,
-    baseHeight?: number,
-    maxItemsPerRow?: number,
-    aspectRatioFallbacks?: number[],
-    preserveItemDimensions?: boolean,
-    getItemDimensions?: (
-      item: MasonryItem,
-      index: number
-    ) => { width: number; height: number } | null
-  ) => MasonryLayoutData;
 }

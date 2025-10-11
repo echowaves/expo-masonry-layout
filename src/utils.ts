@@ -254,24 +254,3 @@ export function calculateRowMasonryLayout(
     totalHeight
   };
 }
-
-/**
- * Utility to get item dimensions from layout data
- */
-export function getItemDimensions(
-  item: MasonryItem,
-  layoutData: MasonryLayoutData
-): { width: number; height: number; left: number; top: number; } | null {
-  for (const row of layoutData.rows) {
-    const foundItem = row.items.find((rowItem) => rowItem.id === item.id);
-    if (foundItem) {
-      return {
-        width: foundItem.width,
-        height: foundItem.height,
-        left: foundItem.left,
-        top: row.top + foundItem.top
-      };
-    }
-  }
-  return null;
-};
