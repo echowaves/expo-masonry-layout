@@ -1,7 +1,7 @@
 /* eslint-env node */
-module.exports = function babelConfig (api) {
+export default function babelConfig (api) {
   api.cache(true)
-  return {
+  return ({
     presets: [['@babel/preset-env', { targets: { node: 'current' } }], '@babel/preset-typescript']
-  }
+  })
 }
