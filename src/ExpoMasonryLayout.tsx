@@ -13,21 +13,22 @@ import { calculateRowMasonryLayout } from './utils';
  * - Pull-to-refresh and infinite scroll support
  * - TypeScript support with comprehensive prop types
  */
-export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
-  data,
-  renderItem,
-  spacing = 6,
-  maxItemsPerRow = 6,
-  baseHeight = 100,
-  aspectRatioFallbacks,
-  preserveItemDimensions = false,
-  getItemDimensions,
-  keyExtractor,
-  onItemLayout,
-  style,
-  contentContainerStyle,
-  ...virtualizedListProps
-}) => {
+export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps) {
+  const {
+    data,
+    renderItem,
+    spacing = 6,
+    maxItemsPerRow = 6,
+    baseHeight = 100,
+    aspectRatioFallbacks,
+    preserveItemDimensions = false,
+    getItemDimensions,
+    keyExtractor,
+    onItemLayout,
+    style,
+    contentContainerStyle,
+    ...virtualizedListProps
+  } = props;
   const { width: screenWidth } = useWindowDimensions();
 
   // Memoize layout calculation to avoid recalculation on every render
@@ -169,10 +170,9 @@ export const ExpoMasonryLayout: React.FC<ExpoMasonryLayoutProps> = ({
       maintainVisibleContentPosition={{
         minIndexForVisible: 0,
         autoscrollToTopThreshold: 10
-      }}
-    />
+      }} />
   );
-};
+}
 
 export default ExpoMasonryLayout;
 
