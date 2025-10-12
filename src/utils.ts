@@ -37,8 +37,8 @@ function calculateItemDimensions (
   }
 
   // Second priority: Preserve exact dimensions if requested and available
-  if (preserveItemDimensions || item.preserveDimensions) {
-    if (item.width && item.height && item.width > 0 && item.height > 0) {
+  if (preserveItemDimensions || (item.preserveDimensions === true)) {
+    if (item.width != null && item.height != null && item.width > 0 && item.height > 0) {
       return { width: item.width, height: item.height }
     }
   }
@@ -60,12 +60,12 @@ function calculateAspectRatio (
   aspectRatioFallbacks: number[] = DEFAULT_ASPECT_RATIOS
 ): number {
   // First priority: Use actual image dimensions if available
-  if (item.width && item.height && item.width > 0 && item.height > 0) {
+  if (item.width != null && item.height != null && item.width > 0 && item.height > 0) {
     return item.width / item.height
   }
 
   // Second priority: Use item ID to generate consistent aspect ratio
-  if (item.id) {
+  if (item.id != null && item.id !== '') {
     const seed = item.id
       .toString()
       .split('')
@@ -185,7 +185,7 @@ export function calculateRowMasonryLayout (
     // Step 2: Normalize heights for auto-calculated items only
     // Items with preserved dimensions should maintain their exact size
     const hasPreservedItems = currentRowItems.some(
-      (item) => (preserveItemDimensions || item.preserveDimensions) && item.width && item.height
+      (item) => (preserveItemDimensions || item.preserveDimensions === true) && item.width != null && item.height != null
     )
 
     if (!hasPreservedItems) {
