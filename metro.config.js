@@ -17,4 +17,4 @@ module.exports = {
     assetExts: ['bin', 'txt', 'jpg', 'png', 'json'],
     sourceExts: ['js', 'json', 'ts', 'tsx']
   }
-};
+}
