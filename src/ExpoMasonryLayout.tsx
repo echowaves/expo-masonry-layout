@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo } from 'react';
-import { StyleSheet, useWindowDimensions, View, ViewStyle, VirtualizedList } from 'react-native';
-import { ExpoMasonryLayoutProps, MasonryItem, MasonryRowData } from './types';
-import { calculateRowMasonryLayout } from './utils';
+import React, { useCallback, useMemo } from 'react'
+import { StyleSheet, useWindowDimensions, View, ViewStyle, VirtualizedList } from 'react-native'
+import { ExpoMasonryLayoutProps, MasonryItem, MasonryRowData } from './types'
+import { calculateRowMasonryLayout } from './utils'
 
 /**
  * High-performance masonry layout component for React Native and Expo
@@ -13,7 +13,7 @@ import { calculateRowMasonryLayout } from './utils';
  * - Pull-to-refresh and infinite scroll support
  * - TypeScript support with comprehensive prop types
  */
-export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps) {
+export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Element {
   const {
     data,
     renderItem,
@@ -28,8 +28,8 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps) {
     style,
     contentContainerStyle,
     ...virtualizedListProps
-  } = props;
-  const { width: screenWidth } = useWindowDimensions();
+  } = props
+  const { width: screenWidth } = useWindowDimensions()
 
   // Memoize layout calculation to avoid recalculation on every render
   const layoutData = useMemo(() => {
@@ -42,7 +42,7 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps) {
       aspectRatioFallbacks,
       preserveItemDimensions,
       getItemDimensions
-    );
+    )
   }, [
     data,
     screenWidth,
@@ -52,20 +52,21 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps) {
     aspectRatioFallbacks,
     preserveItemDimensions,
     getItemDimensions
-  ]);
+  ])
 
   // Default key extractor
   const defaultKeyExtractor = useCallback((item: MasonryItem, index: number) => {
-    return item.id?.toString() || index.toString();
-  }, []);
+    const itemId = item.id?.toString()
+    return (itemId !== undefined && itemId !== '') ? itemId : index.toString()
+  }, [])
 
-  const getKeyExtractor = keyExtractor || defaultKeyExtractor;
+  const getKeyExtractor = keyExtractor ?? defaultKeyExtractor
 
   // Render a single row containing multiple masonry items
   const renderRow = useCallback(
-    ({ item: row }: { item: MasonryRowData; }) => {
-      if (!row || !row.items || row.items.length === 0) {
-        return null;
+    ({ item: row }: { item: MasonryRowData }) => {
+      if (row?.items == null || row.items.length === 0) {
+        return null
       }
 
       return (
@@ -88,11 +89,11 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps) {
                 left: photo.left,
                 top: photo.top
               }
-            };
+            }
 
             // Call the onItemLayout callback if provided
-            if (onItemLayout) {
-              onItemLayout(itemInfo);
+            if (onItemLayout != null) {
+              onItemLayout(itemInfo)
             }
 
             return (
@@ -110,50 +111,50 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps) {
               >
                 {renderItem(itemInfo)}
               </View>
-            );
+            )
           })}
         </View>
-      );
+      )
     },
     [renderItem, spacing, getKeyExtractor, onItemLayout]
-  );
+  )
 
   // Row key extractor
   const rowKeyExtractor = useCallback((row: MasonryRowData) => {
-    return `row-${row.rowIndex}`;
-  }, []);
+    return `row-${row.rowIndex}`
+  }, [])
 
   // Get item layout for VirtualizedList optimization
   const getItemLayout = useCallback(
     (itemData: MasonryRowData[] | null | undefined, index: number) => {
-      if (!itemData || !itemData[index]) {
+      if ((itemData == null) || itemData[index] === undefined) {
         return {
           length: baseHeight + spacing,
           offset: index * (baseHeight + spacing),
           index
-        };
+        }
       }
 
-      const row = itemData[index];
+      const row = itemData[index]
       return {
         length: row.height + spacing,
-        offset: row.top || 0,
+        offset: row.top ?? 0,
         index
-      };
+      }
     },
     [baseHeight, spacing]
-  );
+  )
 
   // Container styles
   const containerStyle: ViewStyle = {
     flex: 1,
     ...(style as ViewStyle)
-  };
+  }
 
   const contentStyle: ViewStyle = {
     paddingBottom: 100,
     ...(contentContainerStyle as ViewStyle)
-  };
+  }
 
   return (
     <VirtualizedList
@@ -162,7 +163,7 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps) {
       horizontal={false}
       renderItem={renderRow}
       keyExtractor={rowKeyExtractor}
-      getItemCount={(listData) => listData?.length || 0}
+      getItemCount={(listData) => listData?.length ?? 0}
       getItem={(listData, index) => listData?.[index]}
       getItemLayout={getItemLayout}
       style={containerStyle}
@@ -170,11 +171,12 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps) {
       maintainVisibleContentPosition={{
         minIndexForVisible: 0,
         autoscrollToTopThreshold: 10
-      }} />
-  );
+      }}
+    />
+  )
 }
 
-export default ExpoMasonryLayout;
+export default ExpoMasonryLayout
 
 const styles = StyleSheet.create({
   rowContainer: {
@@ -183,4 +185,4 @@ const styles = StyleSheet.create({
   itemContainer: {
     position: 'absolute'
   }
-});
+})

@@ -1,89 +1,89 @@
-import React from 'react';
-import { VirtualizedListProps } from 'react-native';
+import React from 'react'
+import { VirtualizedListProps } from 'react-native'
 
 export interface MasonryItem {
-  id: string;
-  width?: number;
-  height?: number;
-  preserveDimensions?: boolean;
-  [key: string]: unknown;
+  id: string
+  width?: number
+  height?: number
+  preserveDimensions?: boolean
+  [key: string]: unknown
 }
 
 export interface MasonryDimensions {
-  width: number;
-  height: number;
-  left: number;
-  top: number;
+  width: number
+  height: number
+  left: number
+  top: number
 }
 
 export interface MasonryRowData {
-  items: (MasonryItem & MasonryDimensions & { masonryIndex: number; aspectRatio: number; })[];
-  height: number;
-  top: number;
-  rowIndex: number;
+  items: Array<MasonryItem & MasonryDimensions & { masonryIndex: number, aspectRatio: number }>
+  height: number
+  top: number
+  rowIndex: number
 }
 
 export interface MasonryLayoutData {
-  rows: MasonryRowData[];
-  totalHeight: number;
+  rows: MasonryRowData[]
+  totalHeight: number
 }
 
 export interface MasonryRenderItemInfo {
-  item: MasonryItem;
-  index: number;
-  dimensions: MasonryDimensions;
+  item: MasonryItem
+  index: number
+  dimensions: MasonryDimensions
 }
 
 export interface ExpoMasonryLayoutProps
   extends Omit<
-    VirtualizedListProps<MasonryRowData>,
-    | 'data'
-    | 'renderItem'
-    | 'keyExtractor'
-    | 'getItemCount'
-    | 'getItem'
-    | 'getItemLayout'
-    | 'horizontal'
+  VirtualizedListProps<MasonryRowData>,
+  | 'data'
+  | 'renderItem'
+  | 'keyExtractor'
+  | 'getItemCount'
+  | 'getItem'
+  | 'getItemLayout'
+  | 'horizontal'
   > {
   /**
    * Array of data items to render in masonry layout
    */
-  data: MasonryItem[];
+  data: MasonryItem[]
 
   /**
    * Function to render each item
    */
-  renderItem: (info: MasonryRenderItemInfo) => React.ReactElement;
+  renderItem: (info: MasonryRenderItemInfo) => React.ReactElement
 
   /**
    * Spacing between items in pixels
    * @default 6
    */
-  spacing?: number;
+  spacing?: number
 
   /**
    * Maximum number of items per row
    * @default 6
    */
-  maxItemsPerRow?: number;
+  maxItemsPerRow?: number
 
   /**
    * Base height for scaling calculations
    * @default 100
    */
-  baseHeight?: number;
+  baseHeight?: number
 
   /**
    * Fallback aspect ratios when image dimensions are not available
    * @default [0.56, 0.67, 0.75, 1.0, 1.33, 1.5, 1.78]
    */
-  aspectRatioFallbacks?: number[];
+  aspectRatioFallbacks?: number[]
 
   /**
    * Whether to respect exact item dimensions when provided
    * @default false
    */
-  preserveItemDimensions?: boolean;
+  preserveItemDimensions?: boolean
 
   /**
    * Function to calculate custom dimensions for items
@@ -92,16 +92,16 @@ export interface ExpoMasonryLayoutProps
   getItemDimensions?: (
     item: MasonryItem,
     index: number
-  ) => { width: number; height: number; } | null;
+  ) => { width: number, height: number } | null
 
   /**
    * Function to extract a unique key for each item
    */
-  keyExtractor?: (item: MasonryItem, index: number) => string;
+  keyExtractor?: (item: MasonryItem, index: number) => string
 
   /**
    * Callback invoked when an item's layout dimensions are calculated
    * Provides the item, its index, and calculated dimensions
    */
-  onItemLayout?: (info: MasonryRenderItemInfo) => void;
+  onItemLayout?: (info: MasonryRenderItemInfo) => void
 }

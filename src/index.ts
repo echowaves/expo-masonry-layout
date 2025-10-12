@@ -1,7 +1,7 @@
-import { ExpoMasonryLayout } from './ExpoMasonryLayout';
+import { ExpoMasonryLayout } from './ExpoMasonryLayout'
 
-export { ExpoMasonryLayout };
-export default ExpoMasonryLayout;
+export { ExpoMasonryLayout }
+export default ExpoMasonryLayout
 
 export type {
   ExpoMasonryLayoutProps,
@@ -10,6 +10,5 @@ export type {
   MasonryLayoutData,
   MasonryRenderItemInfo,
   MasonryRowData
-} from './types';
-export { calculateRowMasonryLayout } from './utils';
-
+} from './types'
+export { calculateRowMasonryLayout } from './utils'
