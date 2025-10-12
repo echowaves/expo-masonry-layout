@@ -1,5 +1,7 @@
 # expo-masonry-layout
 
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/ac3161dc313c4c63b8c5832e76a3e2fa)](https://app.codacy.com/gh/echowaves/expo-masonry-layout?utm_source=github.com&utm_medium=referral&utm_content=echowaves/expo-masonry-layout&utm_campaign=Badge_Grade)
+
 <p align="center">
   <img src="./assets/simulator_screenshot_B5DA2B98-A4BA-4B8A-8917-45AE7F50F97A.png" alt="Expo Masonry Layout Demo" width="300" />
 </p>
