@@ -62,6 +62,45 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
 
   const getKeyExtractor = keyExtractor ?? defaultKeyExtractor
 
+  // Render a single item within a row
+  const renderMasonryItem = useCallback(
+    (photo: MasonryItem & { width: number, height: number, left: number, top: number, masonryIndex: number }) => {
+      const itemInfo = {
+        item: photo,
+        index: photo.masonryIndex,
+        dimensions: {
+          width: photo.width,
+          height: photo.height,
+          left: photo.left,
+          top: photo.top
+        }
+      }
+
+      // Call the onItemLayout callback if provided
+      if (onItemLayout != null) {
+        onItemLayout(itemInfo)
+      }
+
+      return (
+        <View
+          key={getKeyExtractor(photo, photo.masonryIndex)}
+          style={[
+            styles.itemContainer,
+            {
+              top: photo.top,
+              left: photo.left,
+              width: photo.width,
+              height: photo.height
+            }
+          ]}
+        >
+          {renderItem(itemInfo)}
+        </View>
+      )
+    },
+    [renderItem, getKeyExtractor, onItemLayout]
+  )
+
   // Render a single row containing multiple masonry items
   const renderRow = useCallback(
     ({ item: row }: { item: MasonryRowData }) => {
@@ -79,44 +118,11 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
             }
           ]}
         >
-          {row.items.map((photo) => {
-            const itemInfo = {
-              item: photo,
-              index: photo.masonryIndex,
-              dimensions: {
-                width: photo.width,
-                height: photo.height,
-                left: photo.left,
-                top: photo.top
-              }
-            }
-
-            // Call the onItemLayout callback if provided
-            if (onItemLayout != null) {
-              onItemLayout(itemInfo)
-            }
-
-            return (
-              <View
-                key={getKeyExtractor(photo, photo.masonryIndex)}
-                style={[
-                  styles.itemContainer,
-                  {
-                    top: photo.top,
-                    left: photo.left,
-                    width: photo.width,
-                    height: photo.height
-                  }
-                ]}
-              >
-                {renderItem(itemInfo)}
-              </View>
-            )
-          })}
+          {row.items.map(renderMasonryItem)}
         </View>
       )
     },
-    [renderItem, spacing, getKeyExtractor, onItemLayout]
+    [spacing, renderMasonryItem]
   )
 
   // Row key extractor

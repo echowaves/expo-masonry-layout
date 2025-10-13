@@ -78,6 +78,181 @@ function calculateAspectRatio (
 }
 
 /**
+ * Type for positioned masonry item within a row
+ */
+type PositionedMasonryItem = MasonryItem & {
+  width: number
+  height: number
+  masonryIndex: number
+  aspectRatio: number
+  left: number
+  top: number
+}
+
+/**
+ * Fill a row with items scaled to base height
+ */
+function fillRowWithItems (
+  remainingItems: MasonryItem[],
+  globalItemIndex: number,
+  availableWidth: number,
+  spacing: number,
+  maxItemsPerRow: number,
+  baseHeight: number,
+  aspectRatioFallbacks: number[],
+  preserveItemDimensions: boolean,
+  customDimensionsFn?: (item: MasonryItem, index: number) => { width: number, height: number } | null
+): PositionedMasonryItem[] {
+  const currentRowItems: PositionedMasonryItem[] = []
+  let currentRowWidth = 0
+
+  for (let i = 0; i < remainingItems.length && currentRowItems.length < maxItemsPerRow; i++) {
+    const item = remainingItems[i]
+    const dimensions = calculateItemDimensions(
+      item,
+      globalItemIndex + i,
+      baseHeight,
+      aspectRatioFallbacks,
+      preserveItemDimensions,
+      customDimensionsFn
+    )
+
+    const spacingNeeded = currentRowItems.length > 0 ? spacing : 0
+    const wouldFitInRow = currentRowWidth + dimensions.width + spacingNeeded <= availableWidth
+
+    if (wouldFitInRow) {
+      const aspectRatio = dimensions.width / dimensions.height
+      currentRowItems.push({
+        ...item,
+        width: dimensions.width,
+        height: dimensions.height,
+        masonryIndex: globalItemIndex + i,
+        aspectRatio,
+        left: 0,
+        top: 0
+      })
+      currentRowWidth += dimensions.width + spacingNeeded
+    } else {
+      break
+    }
+  }
+
+  return currentRowItems
+}
+
+/**
+ * Ensure at least one item per row to prevent infinite loops
+ */
+function ensureMinimumRowItems (
+  currentRowItems: PositionedMasonryItem[],
+  remainingItems: MasonryItem[],
+  globalItemIndex: number,
+  baseHeight: number,
+  aspectRatioFallbacks: number[],
+  preserveItemDimensions: boolean,
+  customDimensionsFn?: (item: MasonryItem, index: number) => { width: number, height: number } | null
+): PositionedMasonryItem[] {
+  if (currentRowItems.length === 0 && remainingItems.length > 0) {
+    const item = remainingItems[0]
+    const dimensions = calculateItemDimensions(
+      item,
+      globalItemIndex,
+      baseHeight,
+      aspectRatioFallbacks,
+      preserveItemDimensions,
+      customDimensionsFn
+    )
+    const aspectRatio = dimensions.width / dimensions.height
+
+    return [{
+      ...item,
+      width: dimensions.width,
+      height: dimensions.height,
+      masonryIndex: globalItemIndex,
+      aspectRatio,
+      left: 0,
+      top: 0
+    }]
+  }
+  return currentRowItems
+}
+
+/**
+ * Normalize heights for items without preserved dimensions
+ */
+function normalizeItemHeights (
+  items: PositionedMasonryItem[],
+  hasPreservedItems: boolean
+): void {
+  if (!hasPreservedItems) {
+    const maxHeight = Math.max(...items.map((item) => item.height))
+    items.forEach((item) => {
+      if (item.height !== maxHeight) {
+        const heightScaleFactor = maxHeight / item.height
+        item.width = Math.floor(item.width * heightScaleFactor)
+        item.height = maxHeight
+      }
+    })
+  }
+}
+
+/**
+ * Scale row items to fit available width
+ */
+function scaleRowToFitWidth (
+  items: PositionedMasonryItem[],
+  availableWidth: number,
+  spacing: number,
+  hasPreservedItems: boolean
+): void {
+  const totalItemWidth = items.reduce((sum, item) => sum + item.width, 0)
+  const totalSpacing = (items.length - 1) * spacing
+  const totalUsedWidth = totalItemWidth + totalSpacing
+
+  if (totalUsedWidth > 0 && !hasPreservedItems) {
+    const widthRatio = availableWidth / totalUsedWidth
+    items.forEach((item) => {
+      item.width = Math.floor(item.width * widthRatio)
+      item.height = Math.floor(item.height * widthRatio)
+    })
+  }
+}
+
+/**
+ * Position items within a row
+ */
+function positionItemsInRow (
+  items: PositionedMasonryItem[],
+  spacing: number
+): number {
+  const finalRowHeight = Math.max(...items.map((item) => item.height))
+  let currentLeft = spacing
+
+  items.forEach((item) => {
+    item.left = currentLeft
+    item.top = (finalRowHeight - item.height) / 2
+    currentLeft += item.width + spacing
+  })
+
+  return finalRowHeight
+}
+
+/**
+ * Calculate vertical positions for all rows
+ */
+function calculateRowPositions (
+  rows: MasonryRowData[],
+  spacing: number
+): number {
+  let totalHeight = 0
+  rows.forEach((row) => {
+    row.top = totalHeight
+    totalHeight += row.height + spacing
+  })
+  return totalHeight
+}
+
+/**
  * High-performance row-based masonry layout calculation
  * Optimized for vertical scrolling with justified rows
  *
@@ -105,149 +280,65 @@ export function calculateRowMasonryLayout (
   ) => { width: number, height: number } | null
 ): MasonryLayoutData {
   const rows: MasonryRowData[] = []
-  const availableWidth = screenWidth - spacing * 2 // Account for left/right padding
+  const availableWidth = screenWidth - spacing * 2
 
   let remainingItems = [...data]
   let globalItemIndex = 0
 
   while (remainingItems.length > 0) {
-    const currentRowItems: Array<
-    MasonryItem & {
-      width: number
-      height: number
-      masonryIndex: number
-      aspectRatio: number
-      left: number
-      top: number
-    }
-    > = []
-    let currentRowWidth = 0
+    // Step 1: Fill row with items
+    let currentRowItems = fillRowWithItems(
+      remainingItems,
+      globalItemIndex,
+      availableWidth,
+      spacing,
+      maxItemsPerRow,
+      baseHeight,
+      aspectRatioFallbacks,
+      preserveItemDimensions,
+      customDimensionsFn
+    )
 
-    // Step 1: Fill row with items scaled to base height
-    for (let i = 0; i < remainingItems.length && currentRowItems.length < maxItemsPerRow; i++) {
-      const item = remainingItems[i]
-      const dimensions = calculateItemDimensions(
-        item,
-        globalItemIndex + i,
-        baseHeight,
-        aspectRatioFallbacks,
-        preserveItemDimensions,
-        customDimensionsFn
-      )
+    // Step 2: Ensure at least one item
+    currentRowItems = ensureMinimumRowItems(
+      currentRowItems,
+      remainingItems,
+      globalItemIndex,
+      baseHeight,
+      aspectRatioFallbacks,
+      preserveItemDimensions,
+      customDimensionsFn
+    )
 
-      const spacingNeeded = currentRowItems.length > 0 ? spacing : 0
-      const wouldFitInRow = currentRowWidth + dimensions.width + spacingNeeded <= availableWidth
-
-      if (wouldFitInRow) {
-        // For items with preserved dimensions, we need to track the aspect ratio
-        const aspectRatio = dimensions.width / dimensions.height
-
-        currentRowItems.push({
-          ...item,
-          width: dimensions.width,
-          height: dimensions.height,
-          masonryIndex: globalItemIndex + i,
-          aspectRatio,
-          left: 0, // Will be calculated later
-          top: 0 // Will be calculated later
-        })
-        currentRowWidth += dimensions.width + spacingNeeded
-      } else {
-        // Row is full, stop adding items
-        break
-      }
-    }
-
-    // Ensure at least one item per row to prevent infinite loops
-    if (currentRowItems.length === 0 && remainingItems.length > 0) {
-      const item = remainingItems[0]
-      const dimensions = calculateItemDimensions(
-        item,
-        globalItemIndex,
-        baseHeight,
-        aspectRatioFallbacks,
-        preserveItemDimensions,
-        customDimensionsFn
-      )
-      const aspectRatio = dimensions.width / dimensions.height
-
-      currentRowItems.push({
-        ...item,
-        width: dimensions.width,
-        height: dimensions.height,
-        masonryIndex: globalItemIndex,
-        aspectRatio,
-        left: 0,
-        top: 0
-      })
-    }
-
-    // Step 2: Normalize heights for auto-calculated items only
-    // Items with preserved dimensions should maintain their exact size
+    // Step 3: Check for preserved dimensions
     const hasPreservedItems = currentRowItems.some(
       (item) => (preserveItemDimensions || item.preserveDimensions === true) && item.width != null && item.height != null
     )
 
-    if (!hasPreservedItems) {
-      // Original behavior: normalize all heights
-      const maxHeight = Math.max(...currentRowItems.map((item) => item.height))
-      currentRowItems.forEach((item) => {
-        if (item.height !== maxHeight) {
-          const heightScaleFactor = maxHeight / item.height
-          item.width = Math.floor(item.width * heightScaleFactor)
-          item.height = maxHeight
-        }
-      })
-    }
+    // Step 4: Normalize heights
+    normalizeItemHeights(currentRowItems, hasPreservedItems)
 
-    // Step 3: Scale row to fit available width (but respect preserved dimensions)
-    const totalItemWidth = currentRowItems.reduce((sum, item) => sum + item.width, 0)
-    const totalSpacing = (currentRowItems.length - 1) * spacing
-    const totalUsedWidth = totalItemWidth + totalSpacing
+    // Step 5: Scale row to fit width
+    scaleRowToFitWidth(currentRowItems, availableWidth, spacing, hasPreservedItems)
 
-    if (totalUsedWidth > 0 && !hasPreservedItems) {
-      // Only scale if no items have preserved dimensions
-      const widthRatio = availableWidth / totalUsedWidth
+    // Step 6: Position items
+    const finalRowHeight = positionItemsInRow(currentRowItems, spacing)
 
-      currentRowItems.forEach((item) => {
-        item.width = Math.floor(item.width * widthRatio)
-        item.height = Math.floor(item.height * widthRatio)
-      })
-    } else if (hasPreservedItems && totalUsedWidth > availableWidth) {
-      // If preserved items overflow, we let them overflow to maintain exact dimensions
-      // The layout will still work, items will just extend beyond the container width
-    }
-
-    // Step 4: Calculate final row height and positions
-    const finalRowHeight = Math.max(...currentRowItems.map((item) => item.height))
-
-    // Position items within the row
-    let currentLeft = spacing // Start with left padding
-    currentRowItems.forEach((item) => {
-      item.left = currentLeft
-      item.top = (finalRowHeight - item.height) / 2 // Center vertically in row
-      currentLeft += item.width + spacing
-    })
-
-    // Step 5: Create row data
+    // Step 7: Create row data
     rows.push({
       items: currentRowItems,
       height: finalRowHeight,
-      top: 0, // Will be calculated after all rows are processed
+      top: 0,
       rowIndex: rows.length
     })
 
-    // Remove processed items and update indices
+    // Update state for next iteration
     remainingItems = remainingItems.slice(currentRowItems.length)
     globalItemIndex += currentRowItems.length
   }
 
-  // Step 6: Calculate row positions and total height
-  let totalHeight = 0
-  rows.forEach((row) => {
-    row.top = totalHeight
-    totalHeight += row.height + spacing
-  })
+  // Step 8: Calculate row positions and total height
+  const totalHeight = calculateRowPositions(rows, spacing)
 
   return {
     rows,
