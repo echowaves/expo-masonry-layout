@@ -567,4 +567,4 @@ Contributions are welcome! Please read our contributing guidelines and submit pu
   Made with ❤️ by <a href="https://github.com/echowaves">Echowaves Corp.</a><br/>
   <em>Powering beautiful photo experiences in <a href="https://github.com/echowaves/WiSaw">WiSaw</a> and beyond</em>
 </p>
-[![Codacy Badge](https://app.codacy.com/project/badge/Grade/dc6ea0352d0c422fbb82feb44a07d80b)](https://app.codacy.com/gh/echowaves/expo-masonry-layout/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
+<a href="https://app.codacy.com/gh/echowaves/expo-masonry-layout/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade"><img src="https://app.codacy.com/project/badge/Grade/dc6ea0352d0c422fbb82feb44a07d80b"/></a>
