@@ -54,15 +54,14 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
     getItemDimensions
   ])
 
-  // Default key extractor
-  const defaultKeyExtractor = useCallback((item: MasonryItem, index: number) => {
+  // Key extractor with default
+  const getKey = useCallback((item: MasonryItem, index: number) => {
+    if (keyExtractor != null) return keyExtractor(item, index)
     const itemId = item.id?.toString()
     return (itemId !== undefined && itemId !== '') ? itemId : index.toString()
-  }, [])
+  }, [keyExtractor])
 
-  const getKeyExtractor = keyExtractor ?? defaultKeyExtractor
-
-  // Render a single row containing multiple masonry items
+  // Render a single row
   const renderRow = useCallback(
     ({ item: row }: { item: MasonryRowData }) => {
       if (row?.items == null || row.items.length === 0) return null
@@ -70,30 +69,25 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
       return (
         <View style={[styles.rowContainer, { height: row.height, marginBottom: spacing }]}>
           {row.items.map((photo) => {
-            const itemInfo = {
+            const info = {
               item: photo,
               index: photo.masonryIndex,
               dimensions: { width: photo.width, height: photo.height, left: photo.left, top: photo.top }
             }
-
-            onItemLayout?.(itemInfo)
-
+            onItemLayout?.(info)
             return (
               <View
-                key={getKeyExtractor(photo, photo.masonryIndex)}
-                style={[
-                  styles.itemContainer,
-                  { top: photo.top, left: photo.left, width: photo.width, height: photo.height }
-                ]}
+                key={getKey(photo, photo.masonryIndex)}
+                style={[styles.itemContainer, { top: photo.top, left: photo.left, width: photo.width, height: photo.height }]}
               >
-                {renderItem(itemInfo)}
+                {renderItem(info)}
               </View>
             )
           })}
         </View>
       )
     },
-    [renderItem, spacing, getKeyExtractor, onItemLayout]
+    [renderItem, spacing, getKey, onItemLayout]
   )
 
   // Row key extractor
@@ -101,21 +95,13 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
     return `row-${row.rowIndex}`
   }, [])
 
-  // Get item layout for VirtualizedList optimization
+  // Get item layout for VirtualizedList
   const getItemLayout = useCallback(
     (itemData: MasonryRowData[] | null | undefined, index: number) => {
-      if ((itemData == null) || itemData[index] === undefined) {
-        return {
-          length: baseHeight + spacing,
-          offset: index * (baseHeight + spacing),
-          index
-        }
-      }
-
-      const row = itemData[index]
+      const row = itemData?.[index]
       return {
-        length: row.height + spacing,
-        offset: row.top ?? 0,
+        length: row != null ? row.height + spacing : baseHeight + spacing,
+        offset: row != null ? (row.top ?? 0) : index * (baseHeight + spacing),
         index
       }
     },
