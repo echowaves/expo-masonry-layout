@@ -7,12 +7,13 @@ context: |
   Build: tsc (TypeScript compiler)
   Linting: ts-standard
   Testing: Jest
-  Package manager: npm
   Source directory: src/
   Output directory: lib/
   Peer dependencies: React >=18, React Native >=0.70
   Repository: github.com/echowaves/expo-masonry-layout
   License: MIT
+  Dependencies: Always use exact versions in package.json (no ^ or ~ prefixes)
+  Package manager: npm
 
 rules:
   proposal:
