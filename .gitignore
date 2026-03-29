@@ -61,4 +61,4 @@ jspm_packages/
 
 
 #Ignore vscode AI rules
-.github/instructions/codacy.instructions.md
+#.github/instructions/codacy.instructions.md
