@@ -1,6 +1,6 @@
 {
   "name": "expo-masonry-layout",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "description": "High-performance masonry layout component for React Native and Expo applications",
   "main": "./lib/index.js",
   "module": "./lib/index.js",
@@ -61,6 +61,7 @@
     "@babel/preset-env": "^7.29.0",
     "@babel/preset-typescript": "^7.28.5",
     "@types/react": "^19.1.1",
+    "@types/react-native": "0.73.0",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "eslint": "^8.57.1",
