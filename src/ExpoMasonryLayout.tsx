@@ -42,6 +42,11 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Elem
     return resolveColumnCount(columns, screenWidth)
   }, [layoutMode, columns, screenWidth])
 
+  const hasExpandedItems = expandedItemIds != null && expandedItemIds.length > 0
+  if (layoutMode === 'column' && hasExpandedItems && getExpandedHeight == null) {
+    console.warn('ExpoMasonryLayout: getExpandedHeight is required when expandedItemIds is non-empty in column mode')
+  }
+
   // Memoize layout calculation
   const rowLayoutData = useMemo(() => {
     if (layoutMode !== 'row') return null
@@ -255,6 +260,7 @@ const styles = StyleSheet.create({
     position: 'relative'
   },
   itemContainer: {
-    position: 'absolute'
+    position: 'absolute',
+    overflow: 'hidden'
   }
 })

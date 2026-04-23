@@ -30,6 +30,10 @@ The component SHALL accept a `getExpandedHeight` prop of type `(item: MasonryIte
 - **WHEN** an item is expanded
 - **THEN** `getExtraHeight` SHALL NOT be called for that item; the expanded height replaces the entire normal height calculation
 
+#### Scenario: Missing getExpandedHeight warns in column mode
+- **WHEN** `layoutMode` is `'column'`, `expandedItemIds` is non-empty, and `getExpandedHeight` is not provided
+- **THEN** the component SHALL emit a runtime warning indicating `getExpandedHeight` is required for expanded items
+
 ### Requirement: Waterline flushing on expanded item
 When the column layout engine encounters an expanded item during sequential placement, it SHALL flush all columns to the current waterline (maximum of all column heights), place the expanded item full-width at that waterline, and reset all column heights to `waterline + expandedHeight + spacing`.
 
