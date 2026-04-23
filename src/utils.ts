@@ -17,7 +17,7 @@ const DEFAULT_ASPECT_RATIOS = [
 /**
  * Get aspect ratio from item or fallback
  */
-function getAspectRatio(
+function getAspectRatio (
   item: MasonryItem,
   itemIndex: number,
   aspectRatioFallbacks: number[]
@@ -37,7 +37,7 @@ function getAspectRatio(
 /**
  * Calculate dimensions for an item
  */
-function calculateItemDimensions(
+function calculateItemDimensions (
   item: MasonryItem,
   itemIndex: number,
   baseHeight: number,
@@ -72,7 +72,7 @@ type PositionedMasonryItem = MasonryItem & {
 /**
  * High-performance row-based masonry layout calculation
  */
-export function calculateRowMasonryLayout(
+export function calculateRowMasonryLayout (
   data: MasonryItem[],
   screenWidth: number,
   spacing: number = 6,
@@ -170,7 +170,7 @@ export function calculateRowMasonryLayout(
 /**
  * Resolve responsive column count from ColumnsConfig and screen width
  */
-export function resolveColumnCount(columns: ColumnsConfig, screenWidth: number): number {
+export function resolveColumnCount (columns: ColumnsConfig, screenWidth: number): number {
   if (typeof columns === 'number') return columns
 
   const breakpoints = Object.keys(columns)
@@ -202,7 +202,7 @@ type ColumnPositionedItem = MasonryItem & {
 /**
  * Column-based masonry layout calculation
  */
-export function calculateColumnMasonryLayout(
+export function calculateColumnMasonryLayout (
   data: MasonryItem[],
   screenWidth: number,
   numColumns: number,
@@ -292,7 +292,7 @@ const DEFAULT_BAND_HEIGHT = 300
  * Expanded items become their own dedicated single-item bands.
  * Normal items between expansions are grouped into standard fixed-height bands.
  */
-export function sliceIntoBands(
+export function sliceIntoBands (
   items: ColumnPositionedItem[],
   totalHeight: number,
   bandHeight: number = DEFAULT_BAND_HEIGHT

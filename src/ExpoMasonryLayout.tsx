@@ -260,7 +260,6 @@ const styles = StyleSheet.create({
     position: 'relative'
   },
   itemContainer: {
-    position: 'absolute',
-    overflow: 'hidden'
+    position: 'absolute'
   }
 })

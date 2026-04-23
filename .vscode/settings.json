@@ -5,6 +5,7 @@
     "source.fixAll.eslint": "explicit"
   },
   "chat.tools.terminal.autoApprove": {
-    "true": true
+    "true": true,
+    "npm install": true
   }
 }

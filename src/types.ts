@@ -53,14 +53,14 @@ export interface MasonryRenderItemInfo {
 
 export interface ExpoMasonryLayoutProps
   extends Omit<
-    VirtualizedListProps<MasonryRowData>,
-    | 'data'
-    | 'renderItem'
-    | 'keyExtractor'
-    | 'getItemCount'
-    | 'getItem'
-    | 'getItemLayout'
-    | 'horizontal'
+  VirtualizedListProps<MasonryRowData>,
+  | 'data'
+  | 'renderItem'
+  | 'keyExtractor'
+  | 'getItemCount'
+  | 'getItem'
+  | 'getItemLayout'
+  | 'horizontal'
   > {
   /**
    * Array of data items to render in masonry layout
