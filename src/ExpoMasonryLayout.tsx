@@ -1,22 +1,28 @@
 import React, { useCallback, useMemo } from 'react'
 import { StyleSheet, useWindowDimensions, View, ViewStyle, VirtualizedList } from 'react-native'
-import { ExpoMasonryLayoutProps, MasonryItem, MasonryRowData } from './types'
-import { calculateRowMasonryLayout } from './utils'
+import { ExpoMasonryLayoutProps, MasonryBandData, MasonryItem, MasonryRowData } from './types'
+import { calculateColumnMasonryLayout, calculateRowMasonryLayout, resolveColumnCount, sliceIntoBands } from './utils'
 
 /**
  * High-performance masonry layout component for React Native and Expo
  *
  * Features:
  * - Row-based masonry layout optimized for vertical scrolling
+ * - Column-based masonry layout with responsive breakpoints
  * - VirtualizedList for performance with large datasets
  * - Automatic aspect ratio handling with fallbacks
  * - Pull-to-refresh and infinite scroll support
  * - TypeScript support with comprehensive prop types
  */
-export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Element {
+export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Element {
   const {
     data,
     renderItem,
+    layoutMode = 'row',
+    columns = 2,
+    getExtraHeight,
+    expandedItemIds,
+    getExpandedHeight,
     spacing = 6,
     maxItemsPerRow = 6,
     baseHeight = 100,
@@ -31,8 +37,14 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
   } = props
   const { width: screenWidth } = useWindowDimensions()
 
-  // Memoize layout calculation to avoid recalculation on every render
-  const layoutData = useMemo(() => {
+  const numColumns = useMemo(() => {
+    if (layoutMode !== 'column') return 0
+    return resolveColumnCount(columns, screenWidth)
+  }, [layoutMode, columns, screenWidth])
+
+  // Memoize layout calculation
+  const rowLayoutData = useMemo(() => {
+    if (layoutMode !== 'row') return null
     return calculateRowMasonryLayout(
       data,
       screenWidth,
@@ -41,9 +53,11 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
       maxItemsPerRow,
       aspectRatioFallbacks,
       preserveItemDimensions,
-      getItemDimensions
+      getItemDimensions,
+      getExtraHeight
     )
   }, [
+    layoutMode,
     data,
     screenWidth,
     spacing,
@@ -51,7 +65,34 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
     maxItemsPerRow,
     aspectRatioFallbacks,
     preserveItemDimensions,
-    getItemDimensions
+    getItemDimensions,
+    getExtraHeight
+  ])
+
+  const columnLayoutData = useMemo(() => {
+    if (layoutMode !== 'column') return null
+    const { items, totalHeight } = calculateColumnMasonryLayout(
+      data,
+      screenWidth,
+      numColumns,
+      spacing,
+      aspectRatioFallbacks,
+      getExtraHeight,
+      expandedItemIds,
+      getExpandedHeight
+    )
+    const bands = sliceIntoBands(items, totalHeight)
+    return { bands, totalHeight }
+  }, [
+    layoutMode,
+    data,
+    screenWidth,
+    numColumns,
+    spacing,
+    aspectRatioFallbacks,
+    getExtraHeight,
+    expandedItemIds,
+    getExpandedHeight
   ])
 
   // Key extractor with default
@@ -61,7 +102,7 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
     return (itemId !== undefined && itemId !== '') ? itemId : index.toString()
   }, [keyExtractor])
 
-  // Render a single row
+  // Render a single row (row mode)
   const renderRow = useCallback(
     ({ item: row }: { item: MasonryRowData }) => {
       if (row?.items == null || row.items.length === 0) return null
@@ -72,7 +113,9 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
             const info = {
               item: photo,
               index: photo.masonryIndex,
-              dimensions: { width: photo.width, height: photo.height, left: photo.left, top: photo.top }
+              dimensions: { width: photo.width, height: photo.height, left: photo.left, top: photo.top },
+              extraHeight: photo.extraHeight,
+              isExpanded: false
             }
             onItemLayout?.(info)
             return (
@@ -90,23 +133,47 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
     [renderItem, spacing, getKey, onItemLayout]
   )
 
+  // Render a single band (column mode)
+  const renderBand = useCallback(
+    ({ item: band }: { item: MasonryBandData }) => {
+      if (band?.items == null || band.items.length === 0) return null
+
+      return (
+        <View style={[styles.rowContainer, { height: band.height }]}>
+          {band.items.map((photo) => {
+            const info = {
+              item: photo,
+              index: photo.masonryIndex,
+              dimensions: { width: photo.width, height: photo.height, left: photo.left, top: photo.top - band.top },
+              extraHeight: photo.extraHeight,
+              columnIndex: photo.columnIndex >= 0 ? photo.columnIndex : undefined,
+              isExpanded: photo.isExpanded
+            }
+            onItemLayout?.(info)
+            return (
+              <View
+                key={getKey(photo, photo.masonryIndex)}
+                style={[styles.itemContainer, { top: photo.top - band.top, left: photo.left, width: photo.width, height: photo.height }]}
+              >
+                {renderItem(info)}
+              </View>
+            )
+          })}
+        </View>
+      )
+    },
+    [renderItem, getKey, onItemLayout]
+  )
+
   // Row key extractor
   const rowKeyExtractor = useCallback((row: MasonryRowData) => {
     return `row-${row.rowIndex}`
   }, [])
 
-  // Get item layout for VirtualizedList
-  const getItemLayout = useCallback(
-    (itemData: MasonryRowData[] | null | undefined, index: number) => {
-      const row = itemData?.[index]
-      return {
-        length: row != null ? row.height + spacing : baseHeight + spacing,
-        offset: row != null ? (row.top ?? 0) : index * (baseHeight + spacing),
-        index
-      }
-    },
-    [baseHeight, spacing]
-  )
+  // Band key extractor
+  const bandKeyExtractor = useCallback((band: MasonryBandData) => {
+    return `band-${band.bandIndex}`
+  }, [])
 
   // Container styles
   const containerStyle: ViewStyle = {
@@ -119,10 +186,52 @@ export function ExpoMasonryLayout (props: ExpoMasonryLayoutProps): React.JSX.Ele
     ...(contentContainerStyle as ViewStyle)
   }
 
+  if (layoutMode === 'column' && columnLayoutData != null) {
+    const { bands } = columnLayoutData
+
+    const getColumnItemLayout = (_itemData: MasonryBandData[] | null | undefined, index: number): { length: number, offset: number, index: number } => {
+      const band = bands[index]
+      return {
+        length: band != null ? band.height : 300,
+        offset: band != null ? band.top : index * 300,
+        index
+      }
+    }
+
+    return (
+      <VirtualizedList
+        {...virtualizedListProps}
+        data={bands as any}
+        horizontal={false}
+        renderItem={renderBand as any}
+        keyExtractor={bandKeyExtractor as any}
+        getItemCount={(listData) => listData?.length ?? 0}
+        getItem={(listData, index) => listData?.[index]}
+        getItemLayout={getColumnItemLayout as any}
+        style={containerStyle}
+        contentContainerStyle={contentStyle}
+        maintainVisibleContentPosition={{
+          minIndexForVisible: 0,
+          autoscrollToTopThreshold: 10
+        }}
+      />
+    )
+  }
+
+  // Row mode (default)
+  const getItemLayout = (_itemData: MasonryRowData[] | null | undefined, index: number): { length: number, offset: number, index: number } => {
+    const row = rowLayoutData?.rows[index]
+    return {
+      length: row != null ? row.height + spacing : baseHeight + spacing,
+      offset: row != null ? (row.top ?? 0) : index * (baseHeight + spacing),
+      index
+    }
+  }
+
   return (
     <VirtualizedList
       {...virtualizedListProps}
-      data={layoutData.rows}
+      data={rowLayoutData?.rows ?? []}
       horizontal={false}
       renderItem={renderRow}
       keyExtractor={rowKeyExtractor}

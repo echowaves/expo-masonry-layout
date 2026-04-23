@@ -30,7 +30,10 @@
 - 📱 **Responsive**: Automatically adapts to screen size and orientation changes
 - 🎨 **Flexible**: Supports custom aspect ratios and layout configurations
 - 🔄 **Interactive**: Built-in pull-to-refresh and infinite scroll support
-- 📐 **Smart Layout**: Intelligent row-based masonry with justified alignment
+- 📐 **Dual Layout Modes**: Row-based masonry with justified alignment and column-based masonry with shortest-column placement
+- 📊 **Responsive Columns**: Column mode supports responsive breakpoints for adaptive column counts
+- 📝 **Extra Height**: `getExtraHeight` callback for adding dynamic per-item content (captions, badges, buttons) below images
+- 🔍 **Inline Expand**: Expand items to full-width detail view inline within the column layout, with multi-expand support
 - 🎯 **TypeScript**: Full TypeScript support with comprehensive types
 - ⚡ **Optimized**: Minimal re-renders with memoized calculations
 
@@ -173,7 +176,174 @@ const clearSpecificCache = async (imageId) => {
 };
 ```
 
-## 🔧 Advanced Usage
+## � Column Layout Mode
+
+Column-based masonry places items into columns of equal width, filling the shortest column first — the standard Pinterest-style layout:
+
+```tsx
+import ExpoMasonryLayout from 'expo-masonry-layout';
+
+const ColumnMasonryGrid = () => (
+  <ExpoMasonryLayout
+    data={data}
+    renderItem={renderItem}
+    layoutMode="column"
+    columns={3}
+    spacing={8}
+  />
+);
+```
+
+### Responsive Column Count
+
+Use breakpoints to adapt column count to screen width. Breakpoints are width ceilings evaluated from smallest up:
+
+```tsx
+import ExpoMasonryLayout, { ColumnsConfig } from 'expo-masonry-layout';
+
+// 1 column on phones (≤400), 2 on tablets (≤768), 3 on wider screens
+const columns: ColumnsConfig = {
+  default: 3,
+  768: 2,
+  400: 1,
+};
+
+const ResponsiveGrid = () => (
+  <ExpoMasonryLayout
+    data={data}
+    renderItem={renderItem}
+    layoutMode="column"
+    columns={columns}
+    spacing={8}
+  />
+);
+```
+
+## 📝 Extra Height (getExtraHeight)
+
+Add dynamic content below each item's image area using the `getExtraHeight` callback. Works in both row and column modes:
+
+```tsx
+import ExpoMasonryLayout, { MasonryItem, MasonryRenderItemInfo } from 'expo-masonry-layout';
+
+// Calculate extra height for caption text
+const getExtraHeight = (item: MasonryItem, computedWidth: number): number => {
+  if (!item.caption) return 0;
+  const charsPerLine = Math.floor(computedWidth / 8);
+  const numLines = Math.ceil((item.caption as string).length / charsPerLine);
+  return numLines * 18 + 16; // lineHeight * lines + padding
+};
+
+const renderItem = ({ item, dimensions, extraHeight }: MasonryRenderItemInfo) => {
+  const imageHeight = dimensions.height - extraHeight;
+  return (
+    <View style={{ width: dimensions.width, height: dimensions.height }}>
+      <Image
+        source={{ uri: item.imageUrl }}
+        style={{ width: dimensions.width, height: imageHeight }}
+        resizeMode="cover"
+      />
+      {item.caption ? (
+        <Text style={{ padding: 8 }}>{item.caption as string}</Text>
+      ) : null}
+    </View>
+  );
+};
+
+const CaptionGrid = () => (
+  <ExpoMasonryLayout
+    data={data}
+    renderItem={renderItem}
+    layoutMode="column"
+    columns={2}
+    spacing={8}
+    getExtraHeight={getExtraHeight}
+  />
+);
+```
+
+**How it works:**
+- In **row mode**: row height becomes `max(imageHeight + extraHeight)` across all items in the row. Item widths are computed first (two-pass), then `getExtraHeight` is called with the final width.
+- In **column mode**: each item's total height is `scaledImageHeight + extraHeight`, stacked independently per column. Width is known upfront (`screenWidth / numColumns`).
+- `extraHeight` is passed in `MasonryRenderItemInfo` so your `renderItem` knows the image/extra split.
+
+## 🔍 Inline Expand
+
+Expand items to a full-width detail view inline within the column layout. Multiple items can be expanded simultaneously — the layout recalculates on each expand/collapse:
+
+```tsx
+import React, { useState, useCallback } from 'react';
+import { Image, Text, View, TouchableOpacity } from 'react-native';
+import ExpoMasonryLayout, { MasonryItem, MasonryRenderItemInfo } from 'expo-masonry-layout';
+
+const getExpandedHeight = (item: MasonryItem, fullWidth: number): number => {
+  const imageHeight = Math.floor(fullWidth / ((item.width ?? 300) / (item.height ?? 300)));
+  return imageHeight + 200; // image + details area
+};
+
+const InlineExpandGrid = () => {
+  const [expandedIds, setExpandedIds] = useState<string[]>([]);
+
+  const toggleExpand = useCallback((id: string) => {
+    setExpandedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
+    );
+  }, []);
+
+  const renderItem = useCallback(
+    ({ item, dimensions, isExpanded }: MasonryRenderItemInfo) => {
+      if (isExpanded) {
+        const imageH = Math.floor(
+          dimensions.width / ((item.width ?? 300) / (item.height ?? 300))
+        );
+        return (
+          <TouchableOpacity onPress={() => toggleExpand(item.id)}>
+            <Image
+              source={{ uri: item.imageUrl }}
+              style={{ width: dimensions.width, height: imageH }}
+            />
+            <View style={{ padding: 12 }}>
+              <Text style={{ fontSize: 18 }}>{item.title}</Text>
+              <Text>{item.description}</Text>
+            </View>
+          </TouchableOpacity>
+        );
+      }
+
+      return (
+        <TouchableOpacity onPress={() => toggleExpand(item.id)}>
+          <Image
+            source={{ uri: item.imageUrl }}
+            style={{ width: dimensions.width, height: dimensions.height }}
+          />
+        </TouchableOpacity>
+      );
+    },
+    [toggleExpand]
+  );
+
+  return (
+    <ExpoMasonryLayout
+      data={data}
+      renderItem={renderItem}
+      layoutMode="column"
+      columns={3}
+      spacing={8}
+      expandedItemIds={expandedIds}
+      getExpandedHeight={getExpandedHeight}
+    />
+  );
+};
+```
+
+**How it works:**
+- When an expanded item is encountered, all columns flush to the waterline (max column height), the item spans full width, then columns resume below.
+- `isExpanded` is passed in `MasonryRenderItemInfo` so `renderItem` can branch between collapsed/expanded views.
+- When expanded, `dimensions.width` is the full grid width and `dimensions.height` comes from `getExpandedHeight`.
+- `getExtraHeight` is not applied to expanded items — the expanded height replaces the normal layout entirely.
+- Only applies in column mode. In row mode, `expandedItemIds` is ignored.
+
+## �🔧 Advanced Usage
 
 Here's a comprehensive example inspired by the WiSaw app implementation:
 
@@ -376,9 +546,14 @@ The component extends React Native's `VirtualizedListProps` and accepts all Virt
 | ------------------------ | --------------------------------------------------------------------------------- | ------------------------------------------ | ------------------------------------------------------ |
 | `data`                   | `MasonryItem[]`                                                                   | **required**                               | Array of items to display                              |
 | `renderItem`             | `(info: MasonryRenderItemInfo) => ReactElement`                                   | **required**                               | Function to render each item                           |
+| `layoutMode`             | `'row' \| 'column'`                                                               | `'row'`                                    | Layout mode: row-based or column-based masonry         |
+| `columns`                | `number \| ColumnsConfig`                                                         | `2`                                        | Number of columns or responsive breakpoint config (column mode only) |
+| `getExtraHeight`         | `(item: MasonryItem, computedWidth: number) => number`                            | `undefined`                                | Calculate extra height below image area per item       |
+| `expandedItemIds`        | `string[]`                                                                        | `undefined`                                | Item IDs currently expanded to full width (column mode only) |
+| `getExpandedHeight`      | `(item: MasonryItem, fullWidth: number) => number`                                | `undefined`                                | Calculate total height of an expanded item at full width |
 | `spacing`                | `number`                                                                          | `6`                                        | Space between items in pixels                          |
-| `maxItemsPerRow`         | `number`                                                                          | `6`                                        | Maximum number of items per row                        |
-| `baseHeight`             | `number`                                                                          | `100`                                      | Base height for layout calculations                    |
+| `maxItemsPerRow`         | `number`                                                                          | `6`                                        | Maximum number of items per row (row mode only)        |
+| `baseHeight`             | `number`                                                                          | `100`                                      | Base height for layout calculations (row mode only)    |
 | `aspectRatioFallbacks`   | `number[]`                                                                        | `[0.56, 0.67, 0.75, 1.0, 1.33, 1.5, 1.78]` | Fallback aspect ratios                                 |
 | `preserveItemDimensions` | `boolean`                                                                         | `false`                                    | Whether to respect exact item dimensions when provided |
 | `getItemDimensions`      | `(item: MasonryItem, index: number) => { width: number; height: number } \| null` | `undefined`                                | Function to calculate custom dimensions for items      |
@@ -420,7 +595,16 @@ interface MasonryRenderItemInfo {
     left: number;
     top: number;
   };
+  extraHeight: number;    // Extra height added below image (0 if no getExtraHeight)
+  columnIndex?: number;   // Column index (column mode only, undefined when expanded)
+  isExpanded: boolean;    // Whether item is in expanded full-width state
 }
+```
+
+#### ColumnsConfig
+
+```tsx
+type ColumnsConfig = number | { default: number; [breakpoint: number]: number };
 ```
 
 ## � Custom Dimensions
@@ -532,16 +716,25 @@ const mixedData = [
 
 ## 🧮 Layout Algorithm
 
-The component uses a sophisticated row-based masonry algorithm:
+The component supports two layout algorithms:
+
+### Row Mode (default)
 
 1. **Row Filling**: Items are added to rows based on available width
 2. **Height Normalization**: All items in a row are scaled to the same height
 3. **Width Justification**: The entire row is scaled to fill the available width
-4. **Vertical Positioning**: Items are vertically centered within their row
+4. **Extra Height Pass**: If `getExtraHeight` is provided, row height becomes `max(imageHeight + extraHeight)`
+5. **Vertical Positioning**: Items are vertically centered within their row
 
-This approach ensures:
+### Column Mode
 
-- Consistent row heights for smooth scrolling
+1. **Column Width**: Calculated as `(screenWidth - spacing) / numColumns`
+2. **Shortest-Column Placement**: Each item is placed in the column with the smallest cumulative height
+3. **Height Calculation**: Image height derived from aspect ratio, plus `extraHeight` if provided
+4. **Band Virtualization**: Items are sliced into horizontal bands for VirtualizedList rendering
+
+Both modes ensure:
+
 - Optimal use of screen space
 - Predictable layout behavior
 - Excellent performance with virtualization

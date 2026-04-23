@@ -17,7 +17,7 @@ export interface MasonryDimensions {
 }
 
 export interface MasonryRowData {
-  items: Array<MasonryItem & MasonryDimensions & { masonryIndex: number, aspectRatio: number }>
+  items: Array<MasonryItem & MasonryDimensions & { masonryIndex: number, aspectRatio: number, extraHeight: number }>
   height: number
   top: number
   rowIndex: number
@@ -28,22 +28,39 @@ export interface MasonryLayoutData {
   totalHeight: number
 }
 
+export type ColumnsConfig = number | { default: number, [breakpoint: number]: number }
+
+export interface MasonryBandData {
+  items: Array<MasonryItem & MasonryDimensions & { masonryIndex: number, aspectRatio: number, extraHeight: number, columnIndex: number, isExpanded: boolean }>
+  height: number
+  top: number
+  bandIndex: number
+}
+
+export interface MasonryColumnLayoutData {
+  bands: MasonryBandData[]
+  totalHeight: number
+}
+
 export interface MasonryRenderItemInfo {
   item: MasonryItem
   index: number
   dimensions: MasonryDimensions
+  extraHeight: number
+  columnIndex?: number
+  isExpanded: boolean
 }
 
 export interface ExpoMasonryLayoutProps
   extends Omit<
-  VirtualizedListProps<MasonryRowData>,
-  | 'data'
-  | 'renderItem'
-  | 'keyExtractor'
-  | 'getItemCount'
-  | 'getItem'
-  | 'getItemLayout'
-  | 'horizontal'
+    VirtualizedListProps<MasonryRowData>,
+    | 'data'
+    | 'renderItem'
+    | 'keyExtractor'
+    | 'getItemCount'
+    | 'getItem'
+    | 'getItemLayout'
+    | 'horizontal'
   > {
   /**
    * Array of data items to render in masonry layout
@@ -54,6 +71,37 @@ export interface ExpoMasonryLayoutProps
    * Function to render each item
    */
   renderItem: (info: MasonryRenderItemInfo) => React.ReactElement
+
+  /**
+   * Layout mode: 'row' for horizontal row-based layout, 'column' for vertical column-based layout
+   * @default 'row'
+   */
+  layoutMode?: 'row' | 'column'
+
+  /**
+   * Number of columns or responsive breakpoint config for column mode
+   * @default 2
+   */
+  columns?: ColumnsConfig
+
+  /**
+   * Function to calculate extra height below the image area for each item
+   * Receives the item and its computed width (after layout scaling)
+   * Returns the extra height in pixels
+   */
+  getExtraHeight?: (item: MasonryItem, computedWidth: number) => number
+
+  /**
+   * Array of item IDs that are currently expanded to full width (column mode only)
+   * When an item is expanded, it spans all columns at the current waterline
+   */
+  expandedItemIds?: string[]
+
+  /**
+   * Function to calculate the total height of an expanded item at full width
+   * Required when expandedItemIds is non-empty
+   */
+  getExpandedHeight?: (item: MasonryItem, fullWidth: number) => number
 
   /**
    * Spacing between items in pixels

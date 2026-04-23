@@ -9,6 +9,9 @@ export type {
   MasonryItem,
   MasonryLayoutData,
   MasonryRenderItemInfo,
-  MasonryRowData
+  MasonryRowData,
+  ColumnsConfig,
+  MasonryBandData,
+  MasonryColumnLayoutData
 } from './types'
-export { calculateRowMasonryLayout } from './utils'
+export { calculateRowMasonryLayout, calculateColumnMasonryLayout, resolveColumnCount, sliceIntoBands } from './utils'
