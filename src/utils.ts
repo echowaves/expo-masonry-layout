@@ -17,7 +17,7 @@ const DEFAULT_ASPECT_RATIOS = [
 /**
  * Get aspect ratio from item or fallback
  */
-function getAspectRatio (
+function getAspectRatio(
   item: MasonryItem,
   itemIndex: number,
   aspectRatioFallbacks: number[]
@@ -37,7 +37,7 @@ function getAspectRatio (
 /**
  * Calculate dimensions for an item
  */
-function calculateItemDimensions (
+function calculateItemDimensions(
   item: MasonryItem,
   itemIndex: number,
   baseHeight: number,
@@ -72,7 +72,7 @@ type PositionedMasonryItem = MasonryItem & {
 /**
  * High-performance row-based masonry layout calculation
  */
-export function calculateRowMasonryLayout (
+export function calculateRowMasonryLayout(
   data: MasonryItem[],
   screenWidth: number,
   spacing: number = 6,
@@ -170,7 +170,7 @@ export function calculateRowMasonryLayout (
 /**
  * Resolve responsive column count from ColumnsConfig and screen width
  */
-export function resolveColumnCount (columns: ColumnsConfig, screenWidth: number): number {
+export function resolveColumnCount(columns: ColumnsConfig, screenWidth: number): number {
   if (typeof columns === 'number') return columns
 
   const breakpoints = Object.keys(columns)
@@ -202,7 +202,7 @@ type ColumnPositionedItem = MasonryItem & {
 /**
  * Column-based masonry layout calculation
  */
-export function calculateColumnMasonryLayout (
+export function calculateColumnMasonryLayout(
   data: MasonryItem[],
   screenWidth: number,
   numColumns: number,
@@ -288,11 +288,26 @@ export function calculateColumnMasonryLayout (
 const DEFAULT_BAND_HEIGHT = 300
 
 /**
+ * Compute adaptive band height that fully contains all assigned items.
+ * Returns at least bandHeight (DEFAULT_BAND_HEIGHT), expanding if any item
+ * extends past the default boundary.
+ */
+function computeAdaptiveBandHeight(
+  bandItems: ColumnPositionedItem[],
+  bandTop: number,
+  bandHeight: number = DEFAULT_BAND_HEIGHT
+): number {
+  if (bandItems.length === 0) return bandHeight
+  const maxBottom = Math.max(...bandItems.map((item) => item.top - bandTop + item.height))
+  return Math.max(bandHeight, maxBottom)
+}
+
+/**
  * Slice positioned items into horizontal bands for virtualization.
  * Expanded items become their own dedicated single-item bands.
  * Normal items between expansions are grouped into standard fixed-height bands.
  */
-export function sliceIntoBands (
+export function sliceIntoBands(
   items: ColumnPositionedItem[],
   totalHeight: number,
   bandHeight: number = DEFAULT_BAND_HEIGHT
@@ -325,11 +340,12 @@ export function sliceIntoBands (
       for (let b = 0; b < numBands; b++) {
         const bandTop = regionStart + b * bandHeight
         const bandBottom = bandTop + bandHeight
+        const bandItems = regionNormalItems.filter(
+          (item) => item.top >= bandTop && item.top < bandBottom
+        )
         bands.push({
-          items: regionNormalItems.filter(
-            (item) => item.top >= bandTop && item.top < bandBottom
-          ),
-          height: bandHeight,
+          items: bandItems,
+          height: computeAdaptiveBandHeight(bandItems, bandTop, bandHeight),
           top: bandTop,
           bandIndex: bandIndex++
         })
@@ -357,11 +373,12 @@ export function sliceIntoBands (
     for (let b = 0; b < numBands; b++) {
       const bandTop = regionStart + b * bandHeight
       const bandBottom = bandTop + bandHeight
+      const bandItems = regionNormalItems.filter(
+        (item) => item.top >= bandTop && item.top < bandBottom
+      )
       bands.push({
-        items: regionNormalItems.filter(
-          (item) => item.top >= bandTop && item.top < bandBottom
-        ),
-        height: bandHeight,
+        items: bandItems,
+        height: computeAdaptiveBandHeight(bandItems, bandTop, bandHeight),
         top: bandTop,
         bandIndex: bandIndex++
       })
