@@ -288,24 +288,99 @@ export function calculateColumnMasonryLayout(
 const DEFAULT_BAND_HEIGHT = 300
 
 /**
- * Compute adaptive band height that fully contains all assigned items.
- * Returns at least bandHeight (DEFAULT_BAND_HEIGHT), expanding if any item
- * extends past the default boundary.
+ * Find natural band boundaries within a region where all columns have gaps.
+ * Returns boundary y-coordinates (including regionStart and regionEnd).
  */
-function computeAdaptiveBandHeight(
-  bandItems: ColumnPositionedItem[],
-  bandTop: number,
-  bandHeight: number = DEFAULT_BAND_HEIGHT
-): number {
-  if (bandItems.length === 0) return bandHeight
-  const maxBottom = Math.max(...bandItems.map((item) => item.top - bandTop + item.height))
-  return Math.max(bandHeight, maxBottom)
+function findNaturalBoundaries(
+  items: ColumnPositionedItem[],
+  regionStart: number,
+  regionEnd: number,
+  targetBandHeight: number = DEFAULT_BAND_HEIGHT
+): number[] {
+  if (items.length === 0) return [regionStart, regionEnd]
+
+  // Collect candidate split points: item bottom edges
+  const candidates = new Set<number>()
+  for (const item of items) {
+    candidates.add(item.top + item.height)
+  }
+
+  // Build occupied intervals per column
+  const columnIntervals = new Map<number, Array<{ top: number, bottom: number }>>()
+  for (const item of items) {
+    const col = item.columnIndex
+    if (!columnIntervals.has(col)) {
+      columnIntervals.set(col, [])
+    }
+    const intervals = columnIntervals.get(col)
+    if (intervals != null) {
+      intervals.push({ top: item.top, bottom: item.top + item.height })
+    }
+  }
+
+  // Check if a y-coordinate is in a gap for ALL columns
+  const isValidBoundary = (y: number): boolean => {
+    if (y <= regionStart || y >= regionEnd) return false
+    for (const intervals of columnIntervals.values()) {
+      for (const interval of intervals) {
+        if (y > interval.top && y < interval.bottom) {
+          return false // y is inside an item in this column
+        }
+      }
+    }
+    return true
+  }
+
+  // Sort candidates
+  const sortedCandidates = Array.from(candidates).sort((a, b) => a - b)
+
+  // Greedily select boundaries near target multiples
+  const boundaries: number[] = [regionStart]
+  let lastBoundary = regionStart
+
+  while (lastBoundary < regionEnd) {
+    const target = lastBoundary + targetBandHeight
+
+    if (target >= regionEnd) {
+      break
+    }
+
+    // Find the valid candidate closest to the target
+    let bestCandidate: number | null = null
+    let bestDistance = Infinity
+
+    for (const candidate of sortedCandidates) {
+      if (candidate <= lastBoundary) continue
+      if (candidate >= regionEnd) break
+
+      if (isValidBoundary(candidate)) {
+        const distance = Math.abs(candidate - target)
+        if (distance < bestDistance) {
+          bestDistance = distance
+          bestCandidate = candidate
+        }
+        // Once we've gone past the target, stop if we already have a candidate
+        if (candidate > target && bestCandidate != null) break
+      }
+    }
+
+    if (bestCandidate != null) {
+      boundaries.push(bestCandidate)
+      lastBoundary = bestCandidate
+    } else {
+      // No valid boundary found — use regionEnd (single large band)
+      break
+    }
+  }
+
+  boundaries.push(regionEnd)
+  return boundaries
 }
 
 /**
  * Slice positioned items into horizontal bands for virtualization.
  * Expanded items become their own dedicated single-item bands.
- * Normal items between expansions are grouped into standard fixed-height bands.
+ * Normal items between expansions are grouped using natural boundaries.
  */
 export function sliceIntoBands(
   items: ColumnPositionedItem[],
@@ -326,31 +401,35 @@ export function sliceIntoBands(
   const bands: MasonryBandData[] = []
   let bandIndex = 0
 
+  // Helper to create bands for a normal-item region using natural boundaries
+  const createNaturalBands = (regionStart: number, regionEnd: number): void => {
+    const regionNormalItems = normalItems.filter(
+      (item) => item.top >= regionStart && item.top < regionEnd
+    )
+    const boundaries = findNaturalBoundaries(regionNormalItems, regionStart, regionEnd, bandHeight)
+
+    for (let i = 0; i < boundaries.length - 1; i++) {
+      const bStart = boundaries[i]
+      const bEnd = boundaries[i + 1]
+      const bandItems = regionNormalItems.filter(
+        (item) => item.top >= bStart && item.top < bEnd
+      )
+      bands.push({
+        items: bandItems,
+        height: bEnd - bStart,
+        top: bStart,
+        bandIndex: bandIndex++
+      })
+    }
+  }
+
   // Build regions: alternating normal-item regions and expansion bands
   let regionStart = 0
 
   for (const expansion of expansionBoundaries) {
-    // Create fixed-height bands for normal items before this expansion
+    // Create natural bands for normal items before this expansion
     if (expansion.top > regionStart) {
-      const regionNormalItems = normalItems.filter(
-        (item) => item.top >= regionStart && item.top < expansion.top
-      )
-      const regionHeight = expansion.top - regionStart
-      const numBands = Math.ceil(regionHeight / bandHeight)
-      for (let b = 0; b < numBands; b++) {
-        const bandTop = regionStart + b * bandHeight
-        const bandBottom = bandTop + bandHeight
-        const bandItems = regionNormalItems.filter(
-          (item) => item.top >= bandTop && item.top < bandBottom
-        )
-        bands.push({
-          items: bandItems,
-          height: computeAdaptiveBandHeight(bandItems, bandTop, bandHeight),
-          top: bandTop,
-          contentTop: bandTop,
-          bandIndex: bandIndex++
-        })
-      }
+      createNaturalBands(regionStart, expansion.top)
     }
 
     // Create dedicated band for the expanded item
@@ -358,41 +437,15 @@ export function sliceIntoBands(
       items: [expansion.item],
       height: expansion.item.height,
       top: expansion.top,
-      contentTop: expansion.top,
       bandIndex: bandIndex++
     })
 
     regionStart = expansion.bottom
   }
 
-  // Create fixed-height bands for normal items after the last expansion
+  // Create natural bands for normal items after the last expansion
   if (regionStart < totalHeight) {
-    const regionNormalItems = normalItems.filter(
-      (item) => item.top >= regionStart
-    )
-    const regionHeight = totalHeight - regionStart
-    const numBands = Math.ceil(regionHeight / bandHeight)
-    for (let b = 0; b < numBands; b++) {
-      const bandTop = regionStart + b * bandHeight
-      const bandBottom = bandTop + bandHeight
-      const bandItems = regionNormalItems.filter(
-        (item) => item.top >= bandTop && item.top < bandBottom
-      )
-      bands.push({
-        items: bandItems,
-        height: computeAdaptiveBandHeight(bandItems, bandTop, bandHeight),
-        top: bandTop,
-        contentTop: bandTop,
-        bandIndex: bandIndex++
-      })
-    }
-  }
-
-  // Recalculate band.top as cumulative stacked positions
-  let cumulativeOffset = 0
-  for (const band of bands) {
-    band.top = cumulativeOffset
-    cumulativeOffset += band.height
+    createNaturalBands(regionStart, totalHeight)
   }
 
   return bands

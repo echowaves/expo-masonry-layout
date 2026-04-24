@@ -34,7 +34,6 @@ export interface MasonryBandData {
   items: Array<MasonryItem & MasonryDimensions & { masonryIndex: number, aspectRatio: number, extraHeight: number, columnIndex: number, isExpanded: boolean }>
   height: number
   top: number
-  contentTop: number
   bandIndex: number
 }
 
