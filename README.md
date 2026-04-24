@@ -34,7 +34,8 @@
 - 📊 **Responsive Columns**: Column mode supports responsive breakpoints for adaptive column counts
 - 📝 **Extra Height**: `getExtraHeight` callback for adding dynamic per-item content (captions, badges, buttons) below images
 - 🔍 **Inline Expand**: Expand items to full-width detail view inline within the column layout, with multi-expand support
-- 🎯 **TypeScript**: Full TypeScript support with comprehensive types
+- � **Shadow-Friendly**: Item containers don't clip overflow, so shadows, badges, and decorations render correctly
+- �🎯 **TypeScript**: Full TypeScript support with comprehensive types
 - ⚡ **Optimized**: Minimal re-renders with memoized calculations
 
 ## 🌟 Real-world Usage
@@ -558,6 +559,7 @@ The component extends React Native's `VirtualizedListProps` and accepts all Virt
 | `preserveItemDimensions` | `boolean`                                                                         | `false`                                    | Whether to respect exact item dimensions when provided |
 | `getItemDimensions`      | `(item: MasonryItem, index: number) => { width: number; height: number } \| null` | `undefined`                                | Function to calculate custom dimensions for items      |
 | `keyExtractor`           | `(item: MasonryItem, index: number) => string`                                    | `(item, index) => item.id \|\| index`      | Extract unique key for each item                       |
+| `onItemLayout`           | `(info: MasonryRenderItemInfo) => void`                                           | `undefined`                                | Callback when an item's layout dimensions are calculated |
 
 #### VirtualizedList Props
 
@@ -731,7 +733,8 @@ The component supports two layout algorithms:
 1. **Column Width**: Calculated as `(screenWidth - spacing) / numColumns`
 2. **Shortest-Column Placement**: Each item is placed in the column with the smallest cumulative height
 3. **Height Calculation**: Image height derived from aspect ratio, plus `extraHeight` if provided
-4. **Band Virtualization**: Items are sliced into horizontal bands for VirtualizedList rendering
+4. **Natural Band Boundaries**: Items are sliced into horizontal bands for VirtualizedList rendering. Band boundaries are placed at y-coordinates where all columns have a gap between items, ensuring no item is split across bands. This eliminates touch dead zones and visible gaps between bands.
+5. **Shadow Support**: Item containers do not clip overflow, allowing shadows and decorations to render outside item bounds
 
 Both modes ensure:
 
