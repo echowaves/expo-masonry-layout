@@ -4,6 +4,8 @@ export { ExpoMasonryLayout }
 export default ExpoMasonryLayout
 
 export type {
+  AutoScrollOnExpandConfig,
+  ExpoMasonryLayoutHandle,
   ExpoMasonryLayoutProps,
   MasonryDimensions,
   MasonryItem,

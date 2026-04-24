@@ -1,5 +1,5 @@
 /* eslint-env jest */
-import { calculateColumnMasonryLayout, calculateRowMasonryLayout, sliceIntoBands } from '../src/utils'
+import { calculateColumnMasonryLayout, calculateRowMasonryLayout, diffExpandedIds, selectScrollTarget, sliceIntoBands } from '../src/utils'
 
 describe('inline expand layout behavior', () => {
   const spacing = 8
@@ -275,5 +275,73 @@ describe('natural band boundary behavior', () => {
     expect(bands).toHaveLength(1)
     expect(bands[0].height).toBe(150)
     expect(bands[0].top).toBe(0)
+  })
+})
+
+describe('diffExpandedIds', () => {
+  test('detects single item expanded', () => {
+    const { added, removed } = diffExpandedIds([], ['item-5'])
+    expect(added).toEqual(['item-5'])
+    expect(removed).toEqual([])
+  })
+
+  test('detects single item collapsed', () => {
+    const { added, removed } = diffExpandedIds(['item-5'], [])
+    expect(added).toEqual([])
+    expect(removed).toEqual(['item-5'])
+  })
+
+  test('detects multiple simultaneous toggles', () => {
+    const { added, removed } = diffExpandedIds(['item-2'], ['item-5', 'item-9'])
+    expect(added).toEqual(['item-5', 'item-9'])
+    expect(removed).toEqual(['item-2'])
+  })
+
+  test('returns empty arrays when no change', () => {
+    const { added, removed } = diffExpandedIds(['item-2', 'item-5'], ['item-5', 'item-2'])
+    expect(added).toEqual([])
+    expect(removed).toEqual([])
+  })
+
+  test('handles empty to empty', () => {
+    const { added, removed } = diffExpandedIds([], [])
+    expect(added).toEqual([])
+    expect(removed).toEqual([])
+  })
+})
+
+describe('selectScrollTarget', () => {
+  const data = [
+    { id: 'item-1' },
+    { id: 'item-3' },
+    { id: 'item-5' },
+    { id: 'item-7' },
+    { id: 'item-8' },
+    { id: 'item-10' }
+  ]
+
+  test('prefers expanded over collapsed', () => {
+    const target = selectScrollTarget(['item-3'], ['item-7'], data)
+    expect(target).toBe('item-3')
+  })
+
+  test('selects lowest data index among multiple expanded', () => {
+    const target = selectScrollTarget(['item-8', 'item-3'], [], data)
+    expect(target).toBe('item-3')
+  })
+
+  test('selects lowest data index among multiple collapsed', () => {
+    const target = selectScrollTarget([], ['item-10', 'item-5'], data)
+    expect(target).toBe('item-5')
+  })
+
+  test('returns null when no toggles', () => {
+    const target = selectScrollTarget([], [], data)
+    expect(target).toBeNull()
+  })
+
+  test('handles IDs not in data gracefully', () => {
+    const target = selectScrollTarget(['unknown'], [], data)
+    expect(target).toBe('unknown')
   })
 })

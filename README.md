@@ -332,6 +332,7 @@ const InlineExpandGrid = () => {
       spacing={8}
       expandedItemIds={expandedIds}
       getExpandedHeight={getExpandedHeight}
+      autoScrollOnExpand
     />
   );
 };
@@ -342,6 +343,8 @@ const InlineExpandGrid = () => {
 - `isExpanded` is passed in `MasonryRenderItemInfo` so `renderItem` can branch between collapsed/expanded views.
 - When expanded, `dimensions.width` is the full grid width and `dimensions.height` comes from `getExpandedHeight`.
 - `getExtraHeight` is not applied to expanded items — the expanded height replaces the normal layout entirely.
+- `autoScrollOnExpand` automatically scrolls to items when they are expanded or collapsed. Pass `{ animated: false }` to disable animation, or `{ viewOffset: 50 }` to add padding above the item.
+- Use `onExpandedItemLayout` for custom scroll logic, or a ref with `scrollToItem(id)` for full control.
 - Only applies in column mode. In row mode, `expandedItemIds` is ignored.
 
 ## �🔧 Advanced Usage
@@ -560,6 +563,8 @@ The component extends React Native's `VirtualizedListProps` and accepts all Virt
 | `getItemDimensions`      | `(item: MasonryItem, index: number) => { width: number; height: number } \| null` | `undefined`                                | Function to calculate custom dimensions for items      |
 | `keyExtractor`           | `(item: MasonryItem, index: number) => string`                                    | `(item, index) => item.id \|\| index`      | Extract unique key for each item                       |
 | `onItemLayout`           | `(info: MasonryRenderItemInfo) => void`                                           | `undefined`                                | Callback when an item's layout dimensions are calculated |
+| `autoScrollOnExpand`     | `boolean \| { animated?: boolean; viewOffset?: number }`                          | `undefined`                                | Auto-scroll to items when expanded or collapsed (column mode only) |
+| `onExpandedItemLayout`   | `(info: { item, index, dimensions, isExpanded }) => void`                         | `undefined`                                | Callback fired for each item whose expand/collapse state changed |
 
 #### VirtualizedList Props
 
@@ -609,7 +614,31 @@ interface MasonryRenderItemInfo {
 type ColumnsConfig = number | { default: number; [breakpoint: number]: number };
 ```
 
-## � Custom Dimensions
+#### ExpoMasonryLayoutHandle (Ref API)
+
+The component supports `React.forwardRef`. Use a ref to access imperative scroll methods:
+
+```tsx
+import { useRef } from 'react';
+import ExpoMasonryLayout, { ExpoMasonryLayoutHandle } from 'expo-masonry-layout';
+
+const ref = useRef<ExpoMasonryLayoutHandle>(null);
+
+<ExpoMasonryLayout ref={ref} ... />
+
+// Scroll to a specific item by ID
+ref.current?.scrollToItem('item-5', { animated: true, viewOffset: 50 });
+
+// Scroll to a specific offset
+ref.current?.scrollToOffset(500, { animated: true });
+```
+
+| Method | Signature | Description |
+| --- | --- | --- |
+| `scrollToItem` | `(id: string, options?: { animated?: boolean; viewOffset?: number }) => void` | Scroll to an item by ID. No-op if ID not found. |
+| `scrollToOffset` | `(offset: number, options?: { animated?: boolean }) => void` | Scroll to an absolute offset. Works in both layout modes. |
+
+## 🔄 Custom Dimensions
 
 The library supports multiple ways to override the automatic dimension calculation:
 

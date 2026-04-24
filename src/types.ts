@@ -51,6 +51,16 @@ export interface MasonryRenderItemInfo {
   isExpanded: boolean
 }
 
+export type AutoScrollOnExpandConfig = boolean | {
+  animated?: boolean
+  viewOffset?: number
+}
+
+export interface ExpoMasonryLayoutHandle {
+  scrollToItem: (id: string, options?: { animated?: boolean, viewOffset?: number }) => void
+  scrollToOffset: (offset: number, options?: { animated?: boolean }) => void
+}
+
 export interface ExpoMasonryLayoutProps
   extends Omit<
     VirtualizedListProps<MasonryRowData>,
@@ -152,4 +162,24 @@ export interface ExpoMasonryLayoutProps
    * Provides the item, its index, and calculated dimensions
    */
   onItemLayout?: (info: MasonryRenderItemInfo) => void
+
+  /**
+   * Automatically scroll to an item when it is expanded or collapsed.
+   * - true: scroll with animation, item at top of viewport
+   * - object: configure animated and viewOffset
+   * - false/undefined: no auto-scroll
+   */
+  autoScrollOnExpand?: AutoScrollOnExpandConfig
+
+  /**
+   * Callback fired after layout recalculation for each item whose
+   * expand/collapse state just changed. Provides layout info for
+   * custom scroll behavior.
+   */
+  onExpandedItemLayout?: (info: {
+    item: MasonryItem
+    index: number
+    dimensions: MasonryDimensions
+    isExpanded: boolean
+  }) => void
 }

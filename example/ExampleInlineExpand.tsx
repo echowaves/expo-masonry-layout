@@ -95,6 +95,7 @@ const ExampleInlineExpand: React.FC = () => {
             spacing={8}
             expandedItemIds={expandedIds}
             getExpandedHeight={getExpandedHeight}
+            autoScrollOnExpand
         />
     );
 };

@@ -450,3 +450,37 @@ export function sliceIntoBands(
 
   return bands
 }
+
+/**
+ * Diff previous and current expanded item IDs to detect toggles.
+ * Returns arrays of added (newly expanded) and removed (newly collapsed) IDs.
+ */
+export function diffExpandedIds(
+  prevIds: string[],
+  currentIds: string[]
+): { added: string[], removed: string[] } {
+  const prevSet = new Set(prevIds)
+  const currentSet = new Set(currentIds)
+  const added = currentIds.filter((id) => !prevSet.has(id))
+  const removed = prevIds.filter((id) => !currentSet.has(id))
+  return { added, removed }
+}
+
+/**
+ * Select the scroll target from toggled item IDs.
+ * Prefers added (expanded) items over removed (collapsed) items.
+ * Among same-direction toggles, selects the item with the lowest data index.
+ */
+export function selectScrollTarget(
+  added: string[],
+  removed: string[],
+  data: Array<{ id: string }>
+): string | null {
+  if (added.length === 0 && removed.length === 0) return null
+
+  const dataIndexMap = new Map(data.map((item, index) => [item.id, index]))
+  const sortByDataIndex = (ids: string[]): string[] =>
+    [...ids].sort((a, b) => (dataIndexMap.get(a) ?? Infinity) - (dataIndexMap.get(b) ?? Infinity))
+
+  return sortByDataIndex(added)[0] ?? sortByDataIndex(removed)[0] ?? null
+}

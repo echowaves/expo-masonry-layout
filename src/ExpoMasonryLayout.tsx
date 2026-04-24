@@ -1,7 +1,7 @@
-import React, { useCallback, useMemo } from 'react'
+import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { StyleSheet, useWindowDimensions, View, ViewStyle, VirtualizedList } from 'react-native'
-import { ExpoMasonryLayoutProps, MasonryBandData, MasonryItem, MasonryRowData } from './types'
-import { calculateColumnMasonryLayout, calculateRowMasonryLayout, resolveColumnCount, sliceIntoBands } from './utils'
+import { ExpoMasonryLayoutHandle, ExpoMasonryLayoutProps, MasonryBandData, MasonryItem, MasonryRowData } from './types'
+import { calculateColumnMasonryLayout, calculateRowMasonryLayout, diffExpandedIds, resolveColumnCount, selectScrollTarget, sliceIntoBands } from './utils'
 
 /**
  * High-performance masonry layout component for React Native and Expo
@@ -14,7 +14,7 @@ import { calculateColumnMasonryLayout, calculateRowMasonryLayout, resolveColumnC
  * - Pull-to-refresh and infinite scroll support
  * - TypeScript support with comprehensive prop types
  */
-export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Element {
+export const ExpoMasonryLayout = React.forwardRef<ExpoMasonryLayoutHandle, ExpoMasonryLayoutProps>(function ExpoMasonryLayout(props, ref): React.JSX.Element {
   const {
     data,
     renderItem,
@@ -31,11 +31,16 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Elem
     getItemDimensions,
     keyExtractor,
     onItemLayout,
+    autoScrollOnExpand,
+    onExpandedItemLayout,
     style,
     contentContainerStyle,
     ...virtualizedListProps
   } = props
   const { width: screenWidth } = useWindowDimensions()
+
+  const listRef = useRef<VirtualizedList<any>>(null)
+  const prevExpandedIdsRef = useRef<string[]>([])
 
   const numColumns = useMemo(() => {
     if (layoutMode !== 'column') return 0
@@ -99,6 +104,88 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Elem
     expandedItemIds,
     getExpandedHeight
   ])
+
+  // Helper to find an item's top position in column layout data
+  const findItemTop = useCallback((itemId: string): number | null => {
+    if (columnLayoutData == null) return null
+    for (const band of columnLayoutData.bands) {
+      for (const item of band.items) {
+        if (item.id === itemId) return item.top
+      }
+    }
+    return null
+  }, [columnLayoutData])
+
+  // Imperative handle for ref
+  useImperativeHandle(ref, () => ({
+    scrollToItem(id: string, options?: { animated?: boolean, viewOffset?: number }) {
+      const top = findItemTop(id)
+      if (top == null) return
+      const offset = top - (options?.viewOffset ?? 0)
+      listRef.current?.scrollToOffset({
+        offset: Math.max(0, offset),
+        animated: options?.animated !== false
+      })
+    },
+    scrollToOffset(offset: number, options?: { animated?: boolean }) {
+      listRef.current?.scrollToOffset({
+        offset,
+        animated: options?.animated !== false
+      })
+    }
+  }), [findItemTop])
+
+  // Toggle detection and auto-scroll
+  useEffect(() => {
+    if (layoutMode !== 'column') {
+      prevExpandedIdsRef.current = expandedItemIds ?? []
+      return
+    }
+
+    const prevIds = prevExpandedIdsRef.current
+    const currentIds = expandedItemIds ?? []
+    prevExpandedIdsRef.current = currentIds
+
+    const { added, removed } = diffExpandedIds(prevIds, currentIds)
+
+    if (added.length === 0 && removed.length === 0) return
+    if (columnLayoutData == null) return
+
+    // Fire onExpandedItemLayout callback for each toggled item
+    if (onExpandedItemLayout != null) {
+      const allItems = columnLayoutData.bands.flatMap((band) => band.items)
+      for (const id of [...added, ...removed]) {
+        const layoutItem = allItems.find((item) => item.id === id)
+        if (layoutItem != null) {
+          onExpandedItemLayout({
+            item: layoutItem,
+            index: layoutItem.masonryIndex,
+            dimensions: { width: layoutItem.width, height: layoutItem.height, left: layoutItem.left, top: layoutItem.top },
+            isExpanded: added.includes(id)
+          })
+        }
+      }
+    }
+
+    // Auto-scroll to the target item
+    if (autoScrollOnExpand == null || autoScrollOnExpand === false) return
+
+    const config = autoScrollOnExpand === true
+      ? { animated: true, viewOffset: 0 }
+      : { animated: autoScrollOnExpand.animated !== false, viewOffset: autoScrollOnExpand.viewOffset ?? 0 }
+
+    const targetId = selectScrollTarget(added, removed, data)
+    if (targetId == null) return
+
+    const top = findItemTop(targetId)
+    if (top == null) return
+
+    const offset = Math.max(0, top - config.viewOffset)
+    listRef.current?.scrollToOffset({
+      offset,
+      animated: config.animated
+    })
+  }, [layoutMode, expandedItemIds, columnLayoutData, autoScrollOnExpand, onExpandedItemLayout, data, findItemTop])
 
   // Key extractor with default
   const getKey = useCallback((item: MasonryItem, index: number) => {
@@ -205,6 +292,7 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Elem
 
     return (
       <VirtualizedList
+        ref={listRef}
         {...virtualizedListProps}
         data={bands as any}
         horizontal={false}
@@ -235,6 +323,7 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Elem
 
   return (
     <VirtualizedList
+      ref={listRef}
       {...virtualizedListProps}
       data={rowLayoutData?.rows ?? []}
       horizontal={false}
@@ -251,7 +340,7 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Elem
       }}
     />
   )
-}
+})
 
 export default ExpoMasonryLayout
 
