@@ -149,7 +149,7 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Elem
             const info = {
               item: photo,
               index: photo.masonryIndex,
-              dimensions: { width: photo.width, height: photo.height, left: photo.left, top: photo.top - band.top },
+              dimensions: { width: photo.width, height: photo.height, left: photo.left, top: photo.top - band.contentTop },
               extraHeight: photo.extraHeight,
               columnIndex: photo.columnIndex >= 0 ? photo.columnIndex : undefined,
               isExpanded: photo.isExpanded
@@ -158,7 +158,7 @@ export function ExpoMasonryLayout(props: ExpoMasonryLayoutProps): React.JSX.Elem
             return (
               <View
                 key={getKey(photo, photo.masonryIndex)}
-                style={[styles.itemContainer, { top: photo.top - band.top, left: photo.left, width: photo.width, height: photo.height }]}
+                style={[styles.itemContainer, { top: photo.top - band.contentTop, left: photo.left, width: photo.width, height: photo.height }]}
               >
                 {renderItem(info)}
               </View>

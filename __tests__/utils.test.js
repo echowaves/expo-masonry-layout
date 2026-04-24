@@ -217,3 +217,79 @@ describe('adaptive band height behavior', () => {
     expect(postExpBand.height).toBe(319)
   })
 })
+
+describe('cumulative band top coordinates', () => {
+  const spacing = 5
+
+  function makeItem(id, top, height, columnIndex = 0) {
+    return {
+      id,
+      width: 120,
+      height,
+      masonryIndex: 0,
+      aspectRatio: 1,
+      left: spacing + columnIndex * (120 + spacing),
+      top,
+      extraHeight: 0,
+      columnIndex,
+      isExpanded: false
+    }
+  }
+
+  test('band tops are cumulative after adaptive expansion', () => {
+    // Band 0 has an item that overflows: top=0, height=450 → band height expands to 450
+    // Band 1 should start at cumulative top = 450
+    const items = [
+      makeItem('a', 0, 450, 0),
+      makeItem('b', 310, 100, 1)
+    ]
+    const bands = sliceIntoBands(items, 600)
+    expect(bands[0].height).toBe(450)
+    expect(bands[0].top).toBe(0)
+    expect(bands[1].top).toBe(450)
+  })
+
+  test('contentTop preserves original grid-coordinate position', () => {
+    const items = [
+      makeItem('a', 0, 450, 0),
+      makeItem('b', 310, 100, 1)
+    ]
+    const bands = sliceIntoBands(items, 600)
+    // Band 0 grid origin is 0
+    expect(bands[0].contentTop).toBe(0)
+    // Band 1 grid origin is 300 (fixed grid interval)
+    expect(bands[1].contentTop).toBe(300)
+    // But band 1 cumulative top is 450 (after band 0 expanded)
+    expect(bands[1].top).toBe(450)
+  })
+
+  test('no gaps — each band.top equals sum of preceding band heights', () => {
+    // Band 0: item overflows to 450. Band 1: item overflows to 350.
+    const items = [
+      makeItem('a', 0, 450, 0),
+      makeItem('b', 300, 350, 1),
+      makeItem('c', 610, 100, 2)
+    ]
+    const bands = sliceIntoBands(items, 900)
+    // Verify cumulative: band[i].top === sum of band[0..i-1].height
+    let cumulative = 0
+    for (const band of bands) {
+      expect(band.top).toBe(cumulative)
+      cumulative += band.height
+    }
+  })
+
+  test('bands with no expansion have top === contentTop', () => {
+    // All items fit within default 300px bands
+    const items = [
+      makeItem('a', 0, 150, 0),
+      makeItem('b', 0, 200, 1),
+      makeItem('c', 300, 100, 0),
+      makeItem('d', 300, 250, 1)
+    ]
+    const bands = sliceIntoBands(items, 600)
+    for (const band of bands) {
+      expect(band.top).toBe(band.contentTop)
+    }
+  })
+})

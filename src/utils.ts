@@ -347,6 +347,7 @@ export function sliceIntoBands(
           items: bandItems,
           height: computeAdaptiveBandHeight(bandItems, bandTop, bandHeight),
           top: bandTop,
+          contentTop: bandTop,
           bandIndex: bandIndex++
         })
       }
@@ -357,6 +358,7 @@ export function sliceIntoBands(
       items: [expansion.item],
       height: expansion.item.height,
       top: expansion.top,
+      contentTop: expansion.top,
       bandIndex: bandIndex++
     })
 
@@ -380,9 +382,17 @@ export function sliceIntoBands(
         items: bandItems,
         height: computeAdaptiveBandHeight(bandItems, bandTop, bandHeight),
         top: bandTop,
+        contentTop: bandTop,
         bandIndex: bandIndex++
       })
     }
+  }
+
+  // Recalculate band.top as cumulative stacked positions
+  let cumulativeOffset = 0
+  for (const band of bands) {
+    band.top = cumulativeOffset
+    cumulativeOffset += band.height
   }
 
   return bands

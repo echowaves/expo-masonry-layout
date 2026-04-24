@@ -34,6 +34,7 @@ export interface MasonryBandData {
   items: Array<MasonryItem & MasonryDimensions & { masonryIndex: number, aspectRatio: number, extraHeight: number, columnIndex: number, isExpanded: boolean }>
   height: number
   top: number
+  contentTop: number
   bandIndex: number
 }
 
@@ -53,14 +54,14 @@ export interface MasonryRenderItemInfo {
 
 export interface ExpoMasonryLayoutProps
   extends Omit<
-  VirtualizedListProps<MasonryRowData>,
-  | 'data'
-  | 'renderItem'
-  | 'keyExtractor'
-  | 'getItemCount'
-  | 'getItem'
-  | 'getItemLayout'
-  | 'horizontal'
+    VirtualizedListProps<MasonryRowData>,
+    | 'data'
+    | 'renderItem'
+    | 'keyExtractor'
+    | 'getItemCount'
+    | 'getItem'
+    | 'getItemLayout'
+    | 'horizontal'
   > {
   /**
    * Array of data items to render in masonry layout
