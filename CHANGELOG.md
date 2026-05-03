@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-05-03
+
+### Added
+
+- **Dynamic Expanded Height Measurement**: Expanded items are now automatically measured via `onLayout` after rendering. The layout self-corrects when the measured height differs from the initial estimate, supporting dynamic content like accordions, comment threads, and reply forms.
+- **Row Mode Inline Expand**: `expandedItemIds` now works in row mode — expanded items become solo full-width rows with row packing flushed and resumed around them.
+- **`notifyHeightChanged` Ref Method**: New imperative method on the component ref to programmatically update an expanded item's measured height and trigger re-layout.
+- **Measurement Batching**: Multiple `onLayout` measurements within the same frame are batched via `requestAnimationFrame` into a single re-render.
+
+### Changed
+
+- **`getExpandedHeight` is now optional**: When omitted, `screenWidth` is used as the default estimate. Auto-measurement corrects the height after the first render.
+- **`expandedItemIds` no longer column-only**: The prop now works in both row and column layout modes.
+- **Height priority chain**: Expanded item heights resolve as: measured height → `getExpandedHeight` estimate → `screenWidth` default.
+- **Measurement cleanup on collapse**: When an item is collapsed, its measured height is cleared from the cache.
+
+## [2.0.0] - 2026-04-24
+
+### Added
+
+- **Column Layout Mode**: New `layoutMode="column"` for Pinterest-style vertical column-based masonry layout
+- **Responsive Column Count**: `columns` prop accepts breakpoint config for adaptive column counts
+- **Extra Height**: `getExtraHeight` callback for adding dynamic per-item content below images
+- **Inline Expand**: `expandedItemIds` and `getExpandedHeight` for full-width detail views
+- **Shadow-Friendly Rendering**: Item containers don't clip overflow for proper shadow rendering
+- **Auto-Scroll on Expand**: `autoScrollOnExpand` prop for automatic scroll positioning
+- **Imperative Scroll API**: `scrollToItem` and `scrollToOffset` via ref
+- **Natural Band Boundaries**: Column mode uses natural band boundaries for seamless virtualization
+
 ## [1.2.0] - 2026-03-06
 
 ### Changed

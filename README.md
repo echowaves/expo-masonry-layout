@@ -33,7 +33,8 @@
 - 📐 **Dual Layout Modes**: Row-based masonry with justified alignment and column-based masonry with shortest-column placement
 - 📊 **Responsive Columns**: Column mode supports responsive breakpoints for adaptive column counts
 - 📝 **Extra Height**: `getExtraHeight` callback for adding dynamic per-item content (captions, badges, buttons) below images
-- 🔍 **Inline Expand**: Expand items to full-width detail view inline within the column layout, with multi-expand support
+- 🔍 **Inline Expand**: Expand items to full-width detail view inline, with multi-expand support and automatic height measurement
+- 📏 **Dynamic Height Measurement**: Expanded items auto-measure their rendered height — supports dynamic content like accordions, comment lists, and reply forms
 - � **Shadow-Friendly**: Item containers don't clip overflow, so shadows, badges, and decorations render correctly
 - �🎯 **TypeScript**: Full TypeScript support with comprehensive types
 - ⚡ **Optimized**: Minimal re-renders with memoized calculations
@@ -270,7 +271,9 @@ const CaptionGrid = () => (
 
 ## 🔍 Inline Expand
 
-Expand items to a full-width detail view inline within the column layout. Multiple items can be expanded simultaneously — the layout recalculates on each expand/collapse:
+Expand items to a full-width detail view inline within the layout. Works in both **column mode** and **row mode**. Multiple items can be expanded simultaneously — the layout recalculates on each expand/collapse.
+
+Expanded items are automatically measured after rendering, so `getExpandedHeight` is optional — provide it for a better initial estimate, but the layout self-corrects once the content renders:
 
 ```tsx
 import React, { useState, useCallback } from 'react';
@@ -339,13 +342,30 @@ const InlineExpandGrid = () => {
 ```
 
 **How it works:**
-- When an expanded item is encountered, all columns flush to the waterline (max column height), the item spans full width, then columns resume below.
+- In **column mode**: all columns flush to the waterline (max column height), the item spans full width, then columns resume below.
+- In **row mode**: the current row is flushed, the expanded item becomes a solo full-width row, then row packing resumes.
 - `isExpanded` is passed in `MasonryRenderItemInfo` so `renderItem` can branch between collapsed/expanded views.
-- When expanded, `dimensions.width` is the full grid width and `dimensions.height` comes from `getExpandedHeight`.
+- When expanded, `dimensions.width` is the full grid width and `dimensions.height` comes from auto-measurement (or the `getExpandedHeight` estimate before measurement).
+- **Auto-measurement**: Expanded items are rendered without a fixed height constraint and measured via `onLayout`. The layout automatically recalculates when the measured height differs from the estimate. This means dynamic content (accordions, comment threads, reply forms) triggers re-layout automatically.
+- `getExpandedHeight` is **optional** — it provides an initial estimate before measurement. When omitted, `screenWidth` is used as the default estimate.
 - `getExtraHeight` is not applied to expanded items — the expanded height replaces the normal layout entirely.
 - `autoScrollOnExpand` automatically scrolls to items when they are expanded or collapsed. Pass `{ animated: false }` to disable animation, or `{ viewOffset: 50 }` to add padding above the item.
 - Use `onExpandedItemLayout` for custom scroll logic, or a ref with `scrollToItem(id)` for full control.
-- Only applies in column mode. In row mode, `expandedItemIds` is ignored.
+
+### Imperative Height Notification
+
+For cases where you need to programmatically notify the layout of a height change (e.g., after an async data load completes), use the `notifyHeightChanged` method on the ref:
+
+```tsx
+const ref = useRef<ExpoMasonryLayoutHandle>(null);
+
+// After loading comments, tell the layout the new height
+const onCommentsLoaded = (itemId: string, newHeight: number) => {
+  ref.current?.notifyHeightChanged(itemId, newHeight);
+};
+```
+
+In most cases auto-measurement handles everything — `notifyHeightChanged` is only needed when you know the height before the next `onLayout` fires.
 
 ## �🔧 Advanced Usage
 
@@ -553,8 +573,8 @@ The component extends React Native's `VirtualizedListProps` and accepts all Virt
 | `layoutMode`             | `'row' \| 'column'`                                                               | `'row'`                                    | Layout mode: row-based or column-based masonry         |
 | `columns`                | `number \| ColumnsConfig`                                                         | `2`                                        | Number of columns or responsive breakpoint config (column mode only) |
 | `getExtraHeight`         | `(item: MasonryItem, computedWidth: number) => number`                            | `undefined`                                | Calculate extra height below image area per item       |
-| `expandedItemIds`        | `string[]`                                                                        | `undefined`                                | Item IDs currently expanded to full width (column mode only) |
-| `getExpandedHeight`      | `(item: MasonryItem, fullWidth: number) => number`                                | `undefined`                                | Calculate total height of an expanded item at full width |
+| `expandedItemIds`        | `string[]`                                                                        | `undefined`                                | Item IDs currently expanded to full width              |
+| `getExpandedHeight`      | `(item: MasonryItem, fullWidth: number) => number`                                | `undefined`                                | Optional initial height estimate for expanded items; auto-measurement corrects after render |
 | `spacing`                | `number`                                                                          | `6`                                        | Space between items in pixels                          |
 | `maxItemsPerRow`         | `number`                                                                          | `6`                                        | Maximum number of items per row (row mode only)        |
 | `baseHeight`             | `number`                                                                          | `100`                                      | Base height for layout calculations (row mode only)    |
@@ -637,6 +657,7 @@ ref.current?.scrollToOffset(500, { animated: true });
 | --- | --- | --- |
 | `scrollToItem` | `(id: string, options?: { animated?: boolean; viewOffset?: number }) => void` | Scroll to an item by ID. No-op if ID not found. |
 | `scrollToOffset` | `(offset: number, options?: { animated?: boolean }) => void` | Scroll to an absolute offset. Works in both layout modes. |
+| `notifyHeightChanged` | `(id: string, newHeight: number) => void` | Programmatically update the measured height of an expanded item, triggering re-layout. |
 
 ## 🔄 Custom Dimensions
 
@@ -755,7 +776,8 @@ The component supports two layout algorithms:
 2. **Height Normalization**: All items in a row are scaled to the same height
 3. **Width Justification**: The entire row is scaled to fill the available width
 4. **Extra Height Pass**: If `getExtraHeight` is provided, row height becomes `max(imageHeight + extraHeight)`
-5. **Vertical Positioning**: Items are vertically centered within their row
+5. **Expanded Items**: When an item is expanded, the current row is flushed, the expanded item occupies a solo full-width row, and packing resumes in a new row below
+6. **Vertical Positioning**: Items are vertically centered within their row
 
 ### Column Mode
 
