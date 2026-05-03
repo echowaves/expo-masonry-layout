@@ -17,7 +17,7 @@ export interface MasonryDimensions {
 }
 
 export interface MasonryRowData {
-  items: Array<MasonryItem & MasonryDimensions & { masonryIndex: number, aspectRatio: number, extraHeight: number }>
+  items: Array<MasonryItem & MasonryDimensions & { masonryIndex: number, aspectRatio: number, extraHeight: number, isExpanded: boolean }>
   height: number
   top: number
   rowIndex: number
@@ -59,6 +59,7 @@ export type AutoScrollOnExpandConfig = boolean | {
 export interface ExpoMasonryLayoutHandle {
   scrollToItem: (id: string, options?: { animated?: boolean, viewOffset?: number }) => void
   scrollToOffset: (offset: number, options?: { animated?: boolean }) => void
+  notifyHeightChanged: (id: string, newHeight: number) => void
 }
 
 export interface ExpoMasonryLayoutProps
@@ -102,14 +103,15 @@ export interface ExpoMasonryLayoutProps
   getExtraHeight?: (item: MasonryItem, computedWidth: number) => number
 
   /**
-   * Array of item IDs that are currently expanded to full width (column mode only)
-   * When an item is expanded, it spans all columns at the current waterline
+   * Array of item IDs that are currently expanded to full width
+   * When an item is expanded, it spans all columns/rows at full width
    */
   expandedItemIds?: string[]
 
   /**
-   * Function to calculate the total height of an expanded item at full width
-   * Required when expandedItemIds is non-empty
+   * Function to estimate the total height of an expanded item at full width
+   * Optional — auto-measurement corrects the height after rendering
+   * When not provided, screenWidth is used as the default estimate
    */
   getExpandedHeight?: (item: MasonryItem, fullWidth: number) => number
 

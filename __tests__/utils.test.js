@@ -114,8 +114,192 @@ describe('inline expand layout behavior', () => {
     rows.rows.forEach((row) => {
       row.items.forEach((item) => {
         expect(item.extraHeight).toBe(0)
+        expect(item.isExpanded).toBe(false)
       })
     })
+  })
+})
+
+describe('row mode inline expand', () => {
+  const spacing = 8
+  const screenWidth = 360
+  const fullWidth = screenWidth - spacing * 2
+
+  const data = [
+    { id: 'a', width: 120, height: 200 },
+    { id: 'b', width: 200, height: 100 },
+    { id: 'c', width: 100, height: 180 },
+    { id: 'd', width: 160, height: 160 }
+  ]
+
+  test('expanded item becomes solo full-width row', () => {
+    const getExpandedHeight = () => 500
+    const result = calculateRowMasonryLayout(
+      data, screenWidth, spacing, 100, 6, undefined, false, undefined, undefined,
+      ['b'], getExpandedHeight
+    )
+
+    const expandedRow = result.rows.find((row) =>
+      row.items.length === 1 && row.items[0].isExpanded
+    )
+    expect(expandedRow).toBeDefined()
+    expect(expandedRow.items[0].id).toBe('b')
+    expect(expandedRow.items[0].width).toBe(fullWidth)
+    expect(expandedRow.items[0].height).toBe(500)
+    expect(expandedRow.height).toBe(500)
+  })
+
+  test('row packing resumes after expanded item', () => {
+    const getExpandedHeight = () => 400
+    const result = calculateRowMasonryLayout(
+      data, screenWidth, spacing, 100, 6, undefined, false, undefined, undefined,
+      ['b'], getExpandedHeight
+    )
+
+    // Item 'a' should be in a row before the expanded item
+    const rowWithA = result.rows.find((row) => row.items.some((i) => i.id === 'a'))
+    expect(rowWithA).toBeDefined()
+
+    // Items 'c' and 'd' should be in rows after the expanded item
+    const rowWithC = result.rows.find((row) => row.items.some((i) => i.id === 'c'))
+    expect(rowWithC).toBeDefined()
+
+    const expandedRow = result.rows.find((row) => row.items.some((i) => i.id === 'b'))
+    expect(expandedRow.items[0].isExpanded).toBe(true)
+
+    // Verify order: a's row before expanded, expanded before c's row
+    expect(rowWithA.rowIndex).toBeLessThan(expandedRow.rowIndex)
+    expect(expandedRow.rowIndex).toBeLessThan(rowWithC.rowIndex)
+  })
+
+  test('expanded item does not apply getExtraHeight', () => {
+    const getExtraHeight = () => 50
+    const getExpandedHeight = () => 300
+    const result = calculateRowMasonryLayout(
+      data, screenWidth, spacing, 100, 6, undefined, false, undefined, getExtraHeight,
+      ['b'], getExpandedHeight
+    )
+
+    const expandedItem = result.rows.flatMap((r) => r.items).find((i) => i.id === 'b')
+    expect(expandedItem.isExpanded).toBe(true)
+    expect(expandedItem.extraHeight).toBe(0)
+    expect(expandedItem.height).toBe(300)
+  })
+
+  test('multiple expanded items each get solo rows', () => {
+    const getExpandedHeight = () => 250
+    const result = calculateRowMasonryLayout(
+      data, screenWidth, spacing, 100, 6, undefined, false, undefined, undefined,
+      ['a', 'c'], getExpandedHeight
+    )
+
+    const expandedRows = result.rows.filter((row) =>
+      row.items.length === 1 && row.items[0].isExpanded
+    )
+    expect(expandedRows).toHaveLength(2)
+    expect(expandedRows[0].items[0].id).toBe('a')
+    expect(expandedRows[1].items[0].id).toBe('c')
+  })
+})
+
+describe('measured height override logic', () => {
+  const spacing = 8
+  const screenWidth = 360
+
+  const data = [
+    { id: 'a', width: 120, height: 200 },
+    { id: 'b', width: 200, height: 100 },
+    { id: 'c', width: 100, height: 180 }
+  ]
+
+  test('column layout uses measured height over estimate', () => {
+    const getExpandedHeight = () => 400
+    const measuredHeights = new Map([['b', 580]])
+    const result = calculateColumnMasonryLayout(
+      data, screenWidth, 2, spacing, undefined, undefined,
+      ['b'], getExpandedHeight, measuredHeights
+    )
+
+    const itemB = result.items.find((i) => i.id === 'b')
+    expect(itemB.height).toBe(580)
+    expect(itemB.isExpanded).toBe(true)
+  })
+
+  test('column layout falls back to estimate when no measurement', () => {
+    const getExpandedHeight = () => 400
+    const measuredHeights = new Map()
+    const result = calculateColumnMasonryLayout(
+      data, screenWidth, 2, spacing, undefined, undefined,
+      ['b'], getExpandedHeight, measuredHeights
+    )
+
+    const itemB = result.items.find((i) => i.id === 'b')
+    expect(itemB.height).toBe(400)
+  })
+
+  test('row layout uses measured height over estimate', () => {
+    const getExpandedHeight = () => 300
+    const measuredHeights = new Map([['b', 450]])
+    const result = calculateRowMasonryLayout(
+      data, screenWidth, spacing, 100, 6, undefined, false, undefined, undefined,
+      ['b'], getExpandedHeight, measuredHeights
+    )
+
+    const expandedItem = result.rows.flatMap((r) => r.items).find((i) => i.id === 'b')
+    expect(expandedItem.height).toBe(450)
+  })
+
+  test('row layout falls back to estimate when no measurement', () => {
+    const getExpandedHeight = () => 300
+    const result = calculateRowMasonryLayout(
+      data, screenWidth, spacing, 100, 6, undefined, false, undefined, undefined,
+      ['b'], getExpandedHeight
+    )
+
+    const expandedItem = result.rows.flatMap((r) => r.items).find((i) => i.id === 'b')
+    expect(expandedItem.height).toBe(300)
+  })
+})
+
+describe('default expanded height estimate', () => {
+  const spacing = 8
+  const screenWidth = 360
+
+  const data = [
+    { id: 'a', width: 120, height: 200 },
+    { id: 'b', width: 200, height: 100 }
+  ]
+
+  test('column layout uses screenWidth as default when no getExpandedHeight', () => {
+    const result = calculateColumnMasonryLayout(
+      data, screenWidth, 2, spacing, undefined, undefined,
+      ['b'], undefined
+    )
+
+    const itemB = result.items.find((i) => i.id === 'b')
+    expect(itemB.height).toBe(screenWidth)
+    expect(itemB.isExpanded).toBe(true)
+  })
+
+  test('row layout uses screenWidth as default when no getExpandedHeight', () => {
+    const result = calculateRowMasonryLayout(
+      data, screenWidth, spacing, 100, 6, undefined, false, undefined, undefined,
+      ['b'], undefined
+    )
+
+    const expandedItem = result.rows.flatMap((r) => r.items).find((i) => i.id === 'b')
+    expect(expandedItem.height).toBe(screenWidth)
+  })
+
+  test('measured height overrides default estimate', () => {
+    const measuredHeights = new Map([['b', 612]])
+    const result = calculateColumnMasonryLayout(
+      data, screenWidth, 2, spacing, undefined, undefined,
+      ['b'], undefined, measuredHeights
+    )
+
+    const itemB = result.items.find((i) => i.id === 'b')
+    expect(itemB.height).toBe(612)
   })
 })
 

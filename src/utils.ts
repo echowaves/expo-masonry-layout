@@ -67,6 +67,7 @@ type PositionedMasonryItem = MasonryItem & {
   left: number
   top: number
   extraHeight: number
+  isExpanded: boolean
 }
 
 /**
@@ -81,35 +82,18 @@ export function calculateRowMasonryLayout(
   aspectRatioFallbacks: number[] = DEFAULT_ASPECT_RATIOS,
   preserveItemDimensions: boolean = false,
   customDimensionsFn?: (item: MasonryItem, index: number) => { width: number, height: number } | null,
-  getExtraHeight?: (item: MasonryItem, computedWidth: number) => number
+  getExtraHeight?: (item: MasonryItem, computedWidth: number) => number,
+  expandedItemIds?: string[],
+  getExpandedHeight?: (item: MasonryItem, fullWidth: number) => number,
+  measuredHeights?: Map<string, number>
 ): MasonryLayoutData {
   const rows: MasonryRowData[] = []
   const availableWidth = screenWidth - spacing * 2
+  const fullWidth = screenWidth - spacing * 2
+  const expandedSet = new Set(expandedItemIds ?? [])
 
-  for (let startIdx = 0; startIdx < data.length;) {
-    const currentRowItems: PositionedMasonryItem[] = []
-    let currentRowWidth = 0
-
-    // Fill row with items
-    const endIdx = Math.min(startIdx + maxItemsPerRow, data.length)
-    for (let i = startIdx; i < endIdx; i++) {
-      const item = data[i]
-      const dimensions = calculateItemDimensions(item, i, baseHeight, aspectRatioFallbacks, preserveItemDimensions, customDimensionsFn)
-      const spacingNeeded = currentRowItems.length > 0 ? spacing : 0
-
-      if (currentRowWidth + dimensions.width + spacingNeeded > availableWidth && currentRowItems.length > 0) break
-
-      currentRowItems.push({
-        ...item,
-        ...dimensions,
-        masonryIndex: i,
-        aspectRatio: dimensions.width / dimensions.height,
-        left: 0,
-        top: 0,
-        extraHeight: 0
-      })
-      currentRowWidth += dimensions.width + spacingNeeded
-    }
+  const flushRow = (currentRowItems: PositionedMasonryItem[]): void => {
+    if (currentRowItems.length === 0) return
 
     // Check for preserved dimensions
     const hasPreservedItems = currentRowItems.some((item) =>
@@ -154,7 +138,64 @@ export function calculateRowMasonryLayout(
     })
 
     rows.push({ items: currentRowItems, height: finalRowHeight, top: 0, rowIndex: rows.length })
-    startIdx += currentRowItems.length
+  }
+
+  for (let startIdx = 0; startIdx < data.length;) {
+    const item = data[startIdx]
+
+    // Check if this item is expanded
+    if (expandedSet.has(item.id)) {
+      const aspectRatio = getAspectRatio(item, startIdx, aspectRatioFallbacks)
+      const measured = measuredHeights?.get(item.id)
+      const estimated = getExpandedHeight != null ? getExpandedHeight(item, fullWidth) : screenWidth
+      const expandedHeight = measured ?? estimated
+
+      const expandedItem: PositionedMasonryItem = {
+        ...item,
+        width: fullWidth,
+        height: expandedHeight,
+        masonryIndex: startIdx,
+        aspectRatio,
+        left: spacing,
+        top: 0,
+        extraHeight: 0,
+        isExpanded: true
+      }
+
+      rows.push({ items: [expandedItem], height: expandedHeight, top: 0, rowIndex: rows.length })
+      startIdx++
+      continue
+    }
+
+    const currentRowItems: PositionedMasonryItem[] = []
+    let currentRowWidth = 0
+
+    // Fill row with items (skip expanded items — they get their own row)
+    const endIdx = Math.min(startIdx + maxItemsPerRow, data.length)
+    for (let i = startIdx; i < endIdx; i++) {
+      if (expandedSet.has(data[i].id)) break
+
+      const rowItem = data[i]
+      const dimensions = calculateItemDimensions(rowItem, i, baseHeight, aspectRatioFallbacks, preserveItemDimensions, customDimensionsFn)
+      const spacingNeeded = currentRowItems.length > 0 ? spacing : 0
+
+      if (currentRowWidth + dimensions.width + spacingNeeded > availableWidth && currentRowItems.length > 0) break
+
+      currentRowItems.push({
+        ...rowItem,
+        ...dimensions,
+        masonryIndex: i,
+        aspectRatio: dimensions.width / dimensions.height,
+        left: 0,
+        top: 0,
+        extraHeight: 0,
+        isExpanded: false
+      })
+      currentRowWidth += dimensions.width + spacingNeeded
+    }
+
+    flushRow(currentRowItems)
+    startIdx += currentRowItems.length > 0 ? currentRowItems.length : 1
   }
 
   // Calculate row vertical positions
@@ -210,7 +251,8 @@ export function calculateColumnMasonryLayout(
   aspectRatioFallbacks: number[] = DEFAULT_ASPECT_RATIOS,
   getExtraHeight?: (item: MasonryItem, computedWidth: number) => number,
   expandedItemIds?: string[],
-  getExpandedHeight?: (item: MasonryItem, fullWidth: number) => number
+  getExpandedHeight?: (item: MasonryItem, fullWidth: number) => number,
+  measuredHeights?: Map<string, number>
 ): { items: ColumnPositionedItem[], totalHeight: number } {
   const availableWidth = screenWidth - spacing * (numColumns + 1)
   const columnWidth = Math.floor(availableWidth / numColumns)
@@ -223,10 +265,12 @@ export function calculateColumnMasonryLayout(
     const item = data[i]
     const isExpanded = expandedSet.has(item.id)
 
-    if (isExpanded && getExpandedHeight != null) {
+    if (isExpanded) {
       // Flush all columns to waterline
       const waterline = Math.max(...columnHeights, 0)
-      const expandedHeight = getExpandedHeight(item, fullWidth)
+      const measured = measuredHeights?.get(item.id)
+      const estimated = getExpandedHeight != null ? getExpandedHeight(item, fullWidth) : screenWidth
+      const expandedHeight = measured ?? estimated
       const aspectRatio = getAspectRatio(item, i, aspectRatioFallbacks)
 
       positionedItems.push({
