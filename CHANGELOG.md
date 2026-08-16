@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [57.0.0] - 2026-08-07
+
+### Changed
+
+- **Expo SDK 57 Compatibility**: Updated to align with Expo SDK 57
+- **Versioning scheme**: Switched to year-based versioning to better reflect Expo SDK alignment
+
+### Breaking
+
+- **New versioning scheme**: This is a breaking change in versioning format (from 3.x to 57.x)
+
+## [3.0.0] - 2026-08-07
+
+### Changed
+
+- **Expo SDK 57 Compatibility**: Updated dependencies to support Expo SDK 57 / React Native 0.86
+- **Tightened peer dependency lower bound**: `react-native` now requires `>=0.79.0`, dropping support for Expo SDK < 55 (RN < 0.79)
+- **Updated `@types/react`** to `^19.2.18`
+- **Updated TypeScript** from `5.9.3` to `7.0.2`
+- **Updated `@typescript-eslint/*`** packages to `^8.66.0`
+
+### Breaking
+
+- **Dropped support for Expo SDK < 55**: Apps on RN < 0.79 will get a peer dependency conflict on install
+
 ## [2.1.0] - 2026-05-03
 
 ### Added
