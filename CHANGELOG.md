@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [58.0.0] - 2026-10-28
+
+### Changed
+
+- **Expo SDK 58 Compatibility**: pinned the dev toolchain to the versions Expo SDK 58 ships — `react-native@0.88.1`, `react@19.3.1`, `@types/react@19.3.0`
+- **Removed `@types/react-native`**: it is a deprecated stub; React Native has shipped its own type definitions since 0.73
+- **TypeScript pinned to `6.0.3`**: every released `@typescript-eslint` parser caps its `typescript` peer at `>=4.8.4 <6.1.0`, so the previously declared `7.0.2` made `npm install` fail with `ERESOLVE` (the lockfile had quietly stayed on 5.9.3). TypeScript 7 returns as soon as the lint toolchain accepts it
+- **`moduleResolution: "bundler"`** in `tsconfig.json`: the `node10` value is deprecated and errors under TypeScript 6, and `bundler` matches the React Native 0.88 base config
+- **Exact dependency versions**: `devDependencies` moved from caret ranges to exact pins, per the project rule; `@typescript-eslint/*` to `8.72.1` and Babel to `7.29.7` within their existing majors
+- **`eslint` stays on `8.57.1`** (the final 8.x): `ts-standard@12` requires `eslint ^8`, so the eslint 9/10 majors are not installable with this lint setup
+- **VirtualizedList typing migrated** to the React Native 0.88 types, which dropped the generic parameter from `VirtualizedListProps` and the component itself. Base props now derive from `React.ComponentProps<typeof VirtualizedList>` so consumers on React Native 0.79–0.88 all typecheck against the published declarations. Types only — no runtime or public API change
+
+### Compatibility
+
+- Peer dependencies are unchanged (`react >=18.0.0 <20.0.0`, `react-native >=0.79.0 <1.0.0`), so Expo SDK 55–58 remain supported and this is not a breaking release
+- No public API changes
+
 ## [57.0.0] - 2026-08-07
 
 ### Changed

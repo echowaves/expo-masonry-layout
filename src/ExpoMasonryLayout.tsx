@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react'
-import { LayoutChangeEvent, StyleSheet, useWindowDimensions, View, ViewStyle, VirtualizedList } from 'react-native'
+import { LayoutChangeEvent, StyleSheet, useWindowDimensions, View, ViewStyle, VirtualizedList, type VirtualizedListInstance } from 'react-native'
 import { ExpoMasonryLayoutHandle, ExpoMasonryLayoutProps, MasonryBandData, MasonryItem, MasonryRowData } from './types'
 import { calculateColumnMasonryLayout, calculateRowMasonryLayout, diffExpandedIds, resolveColumnCount, selectScrollTarget, sliceIntoBands } from './utils'
 
@@ -39,7 +39,10 @@ export const ExpoMasonryLayout = React.forwardRef<ExpoMasonryLayoutHandle, ExpoM
   } = props
   const { width: screenWidth } = useWindowDimensions()
 
-  const listRef = useRef<VirtualizedList<any>>(null)
+  // VirtualizedListInstance rather than VirtualizedList<any>: React Native 0.88
+  // (Expo SDK 58) made the component non-generic. Internal, so it never reaches
+  // the emitted declarations consumers on older RN versions compile against.
+  const listRef = useRef<VirtualizedListInstance>(null)
   const prevExpandedIdsRef = useRef<string[]>([])
 
   // Measured heights for expanded items (auto-measurement + notifyHeightChanged)

@@ -1,5 +1,5 @@
 import React from 'react'
-import { VirtualizedListProps } from 'react-native'
+import type { VirtualizedList } from 'react-native'
 
 export interface MasonryItem {
   id: string
@@ -62,9 +62,12 @@ export interface ExpoMasonryLayoutHandle {
   notifyHeightChanged: (id: string, newHeight: number) => void
 }
 
+// Base props come from the VirtualizedList component rather than VirtualizedListProps<ItemT>:
+// React Native 0.88 (Expo SDK 58) dropped that type's generic parameter. Every item-typed prop
+// is omitted or overridden below, so the base stays equivalent across the supported range.
 export interface ExpoMasonryLayoutProps
   extends Omit<
-    VirtualizedListProps<MasonryRowData>,
+    React.ComponentProps<typeof VirtualizedList>,
     | 'data'
     | 'renderItem'
     | 'keyExtractor'

@@ -1,6 +1,6 @@
 ## Purpose
 
-Defines the dependency floor and toolchain alignment required for Expo SDK 57 / React Native 0.86, and the versioning convention that replaced plain semver majors. Supersedes `expo-sdk-55-compat`.
+Records the Expo SDK 57 dependency alignment. Kept for provenance; see `expo-sdk-58-compat` for the requirements in force. It superseded `expo-sdk-55-compat`.
 
 Synced from the OpenSpec change `update-expo-deps-v57` (all tasks completed; shipped in releases 3.0.0 and 57.0.0) when this project moved to BMad.
 

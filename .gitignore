@@ -62,3 +62,6 @@ jspm_packages/
 
 #Ignore vscode AI rules
 #.github/instructions/codacy.instructions.md
+
+# BMad generated skill render cache
+_bmad/render/

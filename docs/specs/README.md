@@ -20,7 +20,8 @@ not managed by a spec tool any more.
 | [adaptive-band-heights](./adaptive-band-heights/spec.md) | 5 | Band boundaries in virtualization, touch dead zones, gap coordinates | natural-band-boundaries, fix-band-touch-clipping, fix-band-gap-coordinates |
 | [shadow-rendering](./shadow-rendering/spec.md) | 2 | Shadows and elevation not clipped by item wrappers | fix-shadow-clipping |
 | [inline-expand-hardening](./inline-expand-hardening/spec.md) | 1 | Regression coverage that keeps inline expand stable | harden-inline-expand-validation-and-tests |
-| [expo-sdk-57-compat](./expo-sdk-57-compat/spec.md) | 5 | Dependency floor and toolchain for Expo SDK 57 / RN 0.86 | update-expo-deps-v57 |
+| [expo-sdk-58-compat](./expo-sdk-58-compat/spec.md) | 6 | Dependency floor and toolchain for Expo SDK 58 / RN 0.88 | upgrade-deps-expo-sdk-58 |
+| [expo-sdk-57-compat](./expo-sdk-57-compat/spec.md) | 5 | Superseded record of the SDK 57 support window | update-expo-deps-v57 |
 | [expo-sdk-55-compat](./expo-sdk-55-compat/spec.md) | 3 | Superseded record of the SDK 55 support window | update-expo-deps-v55 |
 
 ## Format

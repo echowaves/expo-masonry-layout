@@ -1,6 +1,6 @@
 ## Purpose
 
-Records the Expo SDK 55 dependency alignment that introduced the current support window. Kept for provenance; see `expo-sdk-57-compat` for the requirements in force.
+Records the Expo SDK 55 dependency alignment that introduced the current support window. Kept for provenance; see `expo-sdk-58-compat` for the requirements in force.
 
 ## Requirements
 
